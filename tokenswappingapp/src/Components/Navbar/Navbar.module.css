@@ -1,0 +1,39 @@
+
+.navbar-brand{
+    font-size: 1.5rem;
+}
+.navbar-brand:hover{
+    color: rgb(255, 255, 255);
+}
+.navbar-brand:active{
+    color: rgb(255, 255, 255);
+}
+.navbar-brand:focus{
+    color: rgb(255, 255, 255);
+}
+
+@media (max-width: 768px) {
+    .navbar-brand{
+        font-size: 1.2rem;
+    }
+}
+
+/* .navbar-brand{
+    font-size: 1.5rem;
+}                
+*/
+.navbar-brand:hover{
+    color: rgb(255, 255, 255);
+}
+.navbar-brand:active{
+    color: rgb(255, 255, 255);
+}
+.navbar-brand:focus{
+    color: rgb(255, 255, 255);
+}
+
+@media (max-width: 768px) {
+    .navbar-brand{
+        font-size: 1.2rem;
+    }
+}               
