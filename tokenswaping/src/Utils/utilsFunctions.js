@@ -1,7 +1,21 @@
 import { ethers } from "ethers";
 import { contractAddress, swapAbi, tokenAbi } from "../Constants/Constants";
 
+
+export const A_DECIMAL = 10**12;
+export const B_DECIMAL = 10**6;
+export const MATIC_DECIMAL = 10**18;
+
+
 export function toWei(amount, decimal = 18) {
+  const toWei = ethers.utils.parseUnits(amount, decimal);
+  return toWei.toString();
+}
+export function toTokenA(amount, decimal = 12) {
+  const toWei = ethers.utils.parseUnits(amount, decimal);
+  return toWei.toString();
+}
+export function toTokenB(amount, decimal = 6) {
   const toWei = ethers.utils.parseUnits(amount, decimal);
   return toWei.toString();
 }
