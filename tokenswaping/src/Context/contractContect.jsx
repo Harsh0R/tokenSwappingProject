@@ -1,7 +1,8 @@
 'use client';
 import { createContext, useEffect, useState } from "react";
-import { connectContract, connectWallet, toWei , MATIC_DECIMAL , A_DECIMAL , B_DECIMAL, toTokenA, toTokenB, getTokenContract } from "../Utils/utilsFunctions";
+import { connectContract, connectWallet, toWei, MATIC_DECIMAL, A_DECIMAL, B_DECIMAL, toTokenA, toTokenB, getTokenContract } from "../Utils/utilsFunctions";
 import { ethers } from "ethers";
+import { contractAddress } from "@/Constants/Constants";
 
 export const ContractContext = createContext();
 
@@ -39,7 +40,7 @@ const ContractContextProvider = ({ children }) => {
       const tokenContractObj = await getTokenContract(address);
       const data = await tokenContractObj.allowance(
         owner,
-        smartContractAddress
+        contractAddress
       );
       const result = toEth(data);
       console.log("allowance === ", result);
@@ -48,32 +49,34 @@ const ContractContextProvider = ({ children }) => {
       return console.error("Error in hasAllowes == ", e);
     }
   }
-  const increaseAllowance = async (amount , tokenType) => {
+  const increaseAllowance = async (amount, tokenType) => {
     try {
       // console.log("Amount = ", amount);
       console.log("Token Type = ", tokenType);
-      
-      
+
+
       const contractObj = await connectContract();
       let address;
       if (tokenType === "TokenA") {
-        console.log("Amount = ", toTokenA(amount));
-        address = await contractObj.tokenA(); 
+        console.log("Amount in tokenA = ", toTokenA(amount));
+        address = await contractObj.tokenA();
         const tokenContractObj = await getTokenContract(address);
         const data = await tokenContractObj.approve(
-          account,
+          contractAddress,
           toTokenA(amount)
         );
         console.log("DAta = ", data);
-      }else{
-        console.log("Amount = ", toTokenB(amount));
+      } else if (tokenType === "TokenB") {
+        console.log("Amount in tokenB = ", toTokenB(amount));
         address = await contractObj.tokenB();
         const tokenContractObj = await getTokenContract(address);
         const data = await tokenContractObj.approve(
-          account,
+          contractAddress,
           toTokenB(amount)
         );
         console.log("DAta = ", data);
+      } else {
+        console.log("Not valid token type");
       }
       console.log("Token Type = ", address);
     } catch (e) {
@@ -82,6 +85,38 @@ const ContractContextProvider = ({ children }) => {
   }
 
 
+  const setMaxSwapAmountForTokenAFunc = async (amount) => {
+
+    try {
+
+      const contract = await connectContract();
+      const amountInWei = toTokenA(amount);
+      const tx = await contract.setMaxSwapAmountForA(amountInWei);
+      await tx.wait();
+      setTransactionStatus(`Max swap amount for tokenA set successful!`);
+
+    } catch (error) {
+      console.log("Error in setMaxSwapAmountForTokenAFunc => ", error);
+      setTransactionStatus(`Transaction failed: ${error.message}`);
+    }
+  }
+
+  const setMaxSwapAmountForTokenBFunc = async (amount) => {
+
+    try {
+
+      const contract = await connectContract();
+      const amountInWei = toTokenB(amount);
+      const tx = await contract.setMaxSwapAmountForB(amountInWei);
+      await tx.wait();
+      setTransactionStatus(`Max swap amount for tokenB set successful!`);
+
+    }
+    catch (error) {
+      console.log("Error in setMaxSwapAmountForTokenBFunc => ", error);
+      setTransactionStatus(`Transaction failed: ${error.message}`);
+    }
+  }
 
   const getBuyARatio = async () => {
     try {
@@ -90,21 +125,18 @@ const ContractContextProvider = ({ children }) => {
       const result = ethers.utils.formatEther(buyARatio);
       console.log("buyARatio => ", buyARatio);
 
-      return result;
+      return result * MATIC_DECIMAL/A_DECIMAL;
     } catch (error) {
       console.log("error in getBuyARatio function => ", error);
     }
   }
-
-
-
   const getBuyBRatio = async () => {
     try {
       const contract = await connectContract();
       const buyBRatio = await contract.buyBRatio();
       const result = ethers.utils.formatEther(buyBRatio);
       console.log("buyBRatio => ", result);
-      return result;
+      return result * MATIC_DECIMAL/B_DECIMAL;
     } catch (error) {
       console.log("error in getBuyBRatio function => ", error);
     }
@@ -116,20 +148,43 @@ const ContractContextProvider = ({ children }) => {
       const sellARatio = await contract.sellARatio();
       const result = ethers.utils.formatEther(sellARatio);
       console.log("sellARatio => ", result);
-      return result;
+      return result * MATIC_DECIMAL/A_DECIMAL;
     } catch (error) {
       console.log("error in getSellARatio function => ", error);
     }
-  } 
+  }
   const getSellBRatio = async () => {
     try {
       const contract = await connectContract();
       const sellBRatio = await contract.sellBRatio();
       const result = ethers.utils.formatEther(sellBRatio);
       console.log("sellBRatio => ", result);
-      return result;
+      return result * MATIC_DECIMAL/B_DECIMAL;
     } catch (error) {
       console.log("error in getSellBRatio function => ", error);
+    }
+  }
+
+  const getAtoBSwapRatio = async () => {
+    try {
+      const contract = await connectContract();
+      const atoBSwapRatio = await contract.AtoBSwapRatio();
+      const result = ethers.utils.formatEther(atoBSwapRatio);
+      console.log("atoBSwapRatio => ", result * A_DECIMAL / B_DECIMAL);
+      return result * A_DECIMAL / B_DECIMAL;
+    } catch (error) {
+      console.log("error in getAtoBSwapRatio function => ", error);
+    }
+  }
+  const getBtoASwapRatio = async () => {
+    try {
+      const contract = await connectContract();
+      const btoASwapRatio = await contract.BtoASwapRatio();
+      const result = ethers.utils.formatEther(btoASwapRatio);
+      console.log("btoASwapRatio => ", result * A_DECIMAL);
+      return result * A_DECIMAL;
+    } catch (error) {
+      console.log("error in getBtoASwapRatio function => ", error);
     }
   }
 
@@ -165,12 +220,12 @@ const ContractContextProvider = ({ children }) => {
       const contract = await connectContract();
       const amountInWei = toTokenA(amountMatic);
       console.log("amountInWei => ", amountInWei);
-      
+
       const tx = await contract.swapAtoMatic(amountInWei);
       await tx.wait();
       setTransactionStatus(`TokenA purchase successful!`);
     } catch (error) {
-      console.log("Error => ", error); 
+      console.log("Error => ", error);
       setTransactionStatus(`Transaction failed: ${error.message}`);
     }
   }
@@ -182,7 +237,33 @@ const ContractContextProvider = ({ children }) => {
       await tx.wait();
       setTransactionStatus(`TokenB purchase successful!`);
     } catch (error) {
-      console.log("Error => ", error); 
+      console.log("Error => ", error);
+      setTransactionStatus(`Transaction failed: ${error.message}`);
+    }
+  }
+
+  const swapTokenAToTokenB = async (amountMatic) => {
+    try {
+      const contract = await connectContract();
+      const amountInWei = toTokenA(amountMatic);
+      const tx = await contract.swapAtoB(amountInWei);
+      await tx.wait();
+      setTransactionStatus(`TokenB purchase successful!`);
+    } catch (error) {
+      console.log("Error => ", error);
+      setTransactionStatus(`Transaction failed: ${error.message}`);
+    }
+  }
+
+  const swapTokenBToTokenA = async (amountMatic) => {
+    try {
+      const contract = await connectContract();
+      const amountInWei = toTokenB(amountMatic);
+      const tx = await contract.swapBtoA(amountInWei);
+      await tx.wait();
+      setTransactionStatus(`TokenB purchase successful!`);
+    } catch (error) {
+      console.log("Error => ", error);
       setTransactionStatus(`Transaction failed: ${error.message}`);
     }
   }
@@ -200,17 +281,6 @@ const ContractContextProvider = ({ children }) => {
     }
   }
 
-  const getFeePercentage = async () => {
-    try {
-      const contract = await connectContract();
-      const feePercentage = await contract.feePercentage();
-      const result = ethers.utils.formatEther(feePercentage);
-      console.log("feePercentage => ", result);
-      return feePercentage;
-    } catch (error) {
-      console.log("error in getFeePercentage function => ", error);
-    }
-  }
 
   const getTokenBAmount = async (account) => {
     try {
@@ -223,6 +293,19 @@ const ContractContextProvider = ({ children }) => {
       console.log("error in getTokenBAmount function => ", error);
     }
   }
+
+  const getFeePercentage = async () => {
+    try {
+      const contract = await connectContract();
+      const feePercentage = await contract.feePercentage();
+      const result = ethers.utils.formatEther(feePercentage);
+      console.log("feePercentage => ", result);
+      return feePercentage;
+    } catch (error) {
+      console.log("error in getFeePercentage function => ", error);
+    }
+  }
+
 
   const getTokenAAddress = async () => {
     try {
@@ -250,7 +333,7 @@ const ContractContextProvider = ({ children }) => {
   }
 
   return (
-    <ContractContext.Provider value={{ contract, getTokenAAddress, getTokenBAddress, connectToWallet, account, getBuyARatio, getBuyBRatio, buyTokenA, buyTokenB, transactionStatus, setTransactionStatus, getTokenAAmount, getTokenBAmount , getFeePercentage , getSellARatio , getSellBRatio , sellTokenA , sellTokenB , hasValideAllowance , increaseAllowance }}>
+    <ContractContext.Provider value={{ contract, getTokenAAddress, getTokenBAddress, connectToWallet, account, getBuyARatio, getBuyBRatio, buyTokenA, buyTokenB, transactionStatus, setTransactionStatus, getTokenAAmount, getTokenBAmount, getFeePercentage, getSellARatio, getSellBRatio, sellTokenA, sellTokenB, hasValideAllowance, increaseAllowance, getAtoBSwapRatio, getBtoASwapRatio, swapTokenAToTokenB, swapTokenBToTokenA, setMaxSwapAmountForTokenAFunc, setMaxSwapAmountForTokenBFunc }}>
       {children}
     </ContractContext.Provider>
   )

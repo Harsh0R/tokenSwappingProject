@@ -247,7 +247,7 @@ const Page = () => {
           </CardContent>
           <CardFooter className="space-y-2">
             <Button
-              variant="solid"
+              variant="outline"
               className="w-full mt-2 bg-purple-600"
               onClick={() => handleBuyToken("TokenA", amountMaticTokenA)}
             >

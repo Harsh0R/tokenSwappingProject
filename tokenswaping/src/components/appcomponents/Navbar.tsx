@@ -40,7 +40,7 @@ const Navbar: React.FC = () => {
             </NavigationMenuItem>
             <NavigationMenuItem>
               <NavigationMenuLink asChild>
-                <Link href="/buytokens">Buy Tokens</Link>
+                <Link href="/buytokens">Buy/Sell Tokens</Link>
               </NavigationMenuLink>
             </NavigationMenuItem>
             <NavigationMenuItem>
