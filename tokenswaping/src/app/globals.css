@@ -67,3 +67,55 @@
     @apply bg-background text-foreground;
   }
 }
+
+.cardbox:before {
+  background-image: linear-gradient(45deg, #000 70%, #ff323e, #000 90%);
+}
+
+.cardbox:after {
+  background-image: linear-gradient(0deg, #000, #7710ff, #000 30%);
+}
+
+.bg-box {
+  background: rgb(63,94,251);
+background: radial-gradient(circle, rgba(63,94,251,1) 0%, rgba(252,70,107,1) 100%);
+backdrop-filter: blur(60px);
+}
+
+.tech_btn i:not(.material-icons) {
+  border-radius: 50px;
+  display: block;
+  top: -2px;
+  right: -2px;
+  bottom: -2px;
+  left: -2px;
+  position: absolute;
+}
+
+.tech_btn i:not(.material-icons), .tech_btn i:nth-child(2) {
+  background: linear-gradient(45deg, #ff323e, #000, #000, #7710ff);
+}
+
+.tech_btn i:not(.material-icons) {
+  border-radius: 50px;
+  display: block;
+  top: -2px;
+  right: -2px;
+  bottom: -2px;
+  left: -2px;
+  position: absolute;
+}
+
+.tech_btn i:not(.material-icons), .tech_btn i:nth-child(2) {
+  background: linear-gradient(45deg, #ff323e, #000, #000, #7710ff);
+}
+.tech_btn i:nth-child(2) {
+  filter: blur(10px);
+}
+
+.tech_btn span, .tech_btn span:before {
+  height: 100%;
+  position: absolute;
+  top: 0;
+  width: 100%;
+}
