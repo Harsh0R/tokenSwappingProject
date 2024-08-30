@@ -2,11 +2,11 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/appcomponents/Navbar";
-import ContractContextProvider from "@/Context/contractContect";
-import Providers from "./providers";
 
+import Providers from "./providers";
 const inter = Inter({ subsets: ["latin"] });
 import "@rainbow-me/rainbowkit/styles.css";
+import ContractContextProvider from "@/Context/contractContect";
 
 export const metadata: Metadata = {
   title: "Create Next App",

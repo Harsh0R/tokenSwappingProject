@@ -4,6 +4,7 @@ import { connectContract, connectWallet, toWei, MATIC_DECIMAL, A_DECIMAL, B_DECI
 import { ethers } from "ethers";
 import { contractAddress } from "@/Constants/Constants";
 
+
 export const ContractContext = createContext();
 
 const ContractContextProvider = ({ children }) => {
@@ -84,37 +85,78 @@ const ContractContextProvider = ({ children }) => {
     }
   }
 
+  // region Getter Functions
 
-  const setMaxSwapAmountForTokenAFunc = async (amount) => {
-
+  const getTokenAAmount = async (account) => {
     try {
-
       const contract = await connectContract();
-      const amountInWei = toTokenA(amount);
-      const tx = await contract.setMaxSwapAmountForA(amountInWei);
-      await tx.wait();
-      setTransactionStatus(`Max swap amount for tokenA set successful!`);
-
+      console.log("tokenAAmount address => ", account);
+      const tokenAAmount = await contract.tokenBalanceA(account);
+      const result = ethers.utils.formatEther(tokenAAmount) * MATIC_DECIMAL / A_DECIMAL;
+      console.log("tokenAAmount => ", result);
+      return result;
     } catch (error) {
-      console.log("Error in setMaxSwapAmountForTokenAFunc => ", error);
-      setTransactionStatus(`Transaction failed: ${error.message}`);
+      console.log("error in getTokenAAmount function => ", error);
     }
   }
 
-  const setMaxSwapAmountForTokenBFunc = async (amount) => {
-
+  const getTokenBAmount = async (account) => {
     try {
-
       const contract = await connectContract();
-      const amountInWei = toTokenB(amount);
-      const tx = await contract.setMaxSwapAmountForB(amountInWei);
-      await tx.wait();
-      setTransactionStatus(`Max swap amount for tokenB set successful!`);
-
+      const tokenBAmount = await contract.tokenBalanceB(account);
+      const result = ethers.utils.formatEther(tokenBAmount) * MATIC_DECIMAL / B_DECIMAL;
+      console.log("tokenBAmount => ", result);
+      return result;
+    } catch (error) {
+      console.log("error in getTokenBAmount function => ", error);
     }
-    catch (error) {
-      console.log("Error in setMaxSwapAmountForTokenBFunc => ", error);
-      setTransactionStatus(`Transaction failed: ${error.message}`);
+  }
+
+  const getFeePercentage = async () => {
+    try {
+      const contract = await connectContract();
+      const feePercentage = await contract.feePercentage();
+      const result = ethers.utils.formatEther(feePercentage);
+      console.log("feePercentage => ", result);
+      return feePercentage;
+    } catch (error) {
+      console.log("error in getFeePercentage function => ", error);
+    }
+  }
+
+  const getMaxSwapAmountForA = async () => {
+    try {
+      const contract = await connectContract();
+      const amount = await contract.maxSwapAmountForA();
+      const result = ethers.utils.formatEther(amount);
+      console.log("maxSwapAmountForA => ", result);
+      return result;
+    } catch (error) {
+      console.log("error in getMaxSwapAmountForA function => ", error);
+    }
+  }
+
+  const getMaxSwapAmountForB = async () => {
+    try {
+      const contract = await connectContract();
+      const amount = await contract.maxSwapAmountForB();
+      const result = ethers.utils.formatEther(amount);
+      console.log("maxSwapAmountForB => ", result);
+      return result;
+    } catch (error) {
+      console.log("error in getMaxSwapAmountForB function => ", error);
+    }
+  }
+
+  const getFeeAddress = async () => {
+    try {
+      const contract = await connectContract();
+      const feeAddress = await contract.feeAddress();
+      const result = feeAddress;
+      console.log("feeAddress => ", result);
+      return result;
+    } catch (error) {
+      console.log("error in getFeeAddress function => ", error);
     }
   }
 
@@ -125,18 +167,19 @@ const ContractContextProvider = ({ children }) => {
       const result = ethers.utils.formatEther(buyARatio);
       console.log("buyARatio => ", buyARatio);
 
-      return result * MATIC_DECIMAL/A_DECIMAL;
+      return result * MATIC_DECIMAL / A_DECIMAL;
     } catch (error) {
       console.log("error in getBuyARatio function => ", error);
     }
   }
+
   const getBuyBRatio = async () => {
     try {
       const contract = await connectContract();
       const buyBRatio = await contract.buyBRatio();
       const result = ethers.utils.formatEther(buyBRatio);
       console.log("buyBRatio => ", result);
-      return result * MATIC_DECIMAL/B_DECIMAL;
+      return result * MATIC_DECIMAL / B_DECIMAL;
     } catch (error) {
       console.log("error in getBuyBRatio function => ", error);
     }
@@ -148,18 +191,19 @@ const ContractContextProvider = ({ children }) => {
       const sellARatio = await contract.sellARatio();
       const result = ethers.utils.formatEther(sellARatio);
       console.log("sellARatio => ", result);
-      return result * MATIC_DECIMAL/A_DECIMAL;
+      return result * MATIC_DECIMAL / A_DECIMAL;
     } catch (error) {
       console.log("error in getSellARatio function => ", error);
     }
   }
+
   const getSellBRatio = async () => {
     try {
       const contract = await connectContract();
       const sellBRatio = await contract.sellBRatio();
       const result = ethers.utils.formatEther(sellBRatio);
       console.log("sellBRatio => ", result);
-      return result * MATIC_DECIMAL/B_DECIMAL;
+      return result * MATIC_DECIMAL / B_DECIMAL;
     } catch (error) {
       console.log("error in getSellBRatio function => ", error);
     }
@@ -187,6 +231,9 @@ const ContractContextProvider = ({ children }) => {
       console.log("error in getBtoASwapRatio function => ", error);
     }
   }
+
+
+  //region Transaction Functions
 
   const buyTokenA = async (amountMatic) => {
     try {
@@ -268,44 +315,44 @@ const ContractContextProvider = ({ children }) => {
     }
   }
 
-  const getTokenAAmount = async (account) => {
+
+
+
+
+  // region Setter Functions
+
+  const setMaxSwapAmountForTokenAFunc = async (amount) => {
+
     try {
+
       const contract = await connectContract();
-      console.log("tokenAAmount address => ", account);
-      const tokenAAmount = await contract.tokenBalanceA(account);
-      const result = ethers.utils.formatEther(tokenAAmount) * MATIC_DECIMAL / A_DECIMAL;
-      console.log("tokenAAmount => ", result);
-      return result;
+      const amountInWei = toTokenA(amount);
+      const tx = await contract.setMaxSwapAmountForA(amountInWei);
+      await tx.wait();
+      setTransactionStatus(`Max swap amount for tokenA set successful!`);
+
     } catch (error) {
-      console.log("error in getTokenAAmount function => ", error);
+      console.log("Error in setMaxSwapAmountForTokenAFunc => ", error);
+      setTransactionStatus(`Transaction failed: ${error.message}`);
     }
   }
 
+  const setMaxSwapAmountForTokenBFunc = async (amount) => {
 
-  const getTokenBAmount = async (account) => {
     try {
+
       const contract = await connectContract();
-      const tokenBAmount = await contract.tokenBalanceB(account);
-      const result = ethers.utils.formatEther(tokenBAmount) * MATIC_DECIMAL / B_DECIMAL;
-      console.log("tokenBAmount => ", result);
-      return result;
-    } catch (error) {
-      console.log("error in getTokenBAmount function => ", error);
+      const amountInWei = toTokenB(amount);
+      const tx = await contract.setMaxSwapAmountForB(amountInWei);
+      await tx.wait();
+      setTransactionStatus(`Max swap amount for tokenB set successful!`);
+
+    }
+    catch (error) {
+      console.log("Error in setMaxSwapAmountForTokenBFunc => ", error);
+      setTransactionStatus(`Transaction failed: ${error.message}`);
     }
   }
-
-  const getFeePercentage = async () => {
-    try {
-      const contract = await connectContract();
-      const feePercentage = await contract.feePercentage();
-      const result = ethers.utils.formatEther(feePercentage);
-      console.log("feePercentage => ", result);
-      return feePercentage;
-    } catch (error) {
-      console.log("error in getFeePercentage function => ", error);
-    }
-  }
-
 
   const getTokenAAddress = async () => {
     try {
@@ -332,8 +379,166 @@ const ContractContextProvider = ({ children }) => {
     }
   }
 
+
+  const setBuyARatio = async (ratio) => {
+    try {
+      const contract = await connectContract();
+      const ratioInWei = toWei(ratio);
+      const tx = await contract.setBuyARatio(ratioInWei);
+      await tx.wait();
+      setTransactionStatus(`BuyA ratio set successful!`);
+
+    } catch (error) {
+      console.log("Error in setBuyARatio => ", error);
+      setTransactionStatus(`Transaction failed: ${error.message}`);
+    }
+  }
+
+  const setBuyBRatio = async (ratio) => {
+    try {
+      const contract = await connectContract();
+      const ratioInWei = toWei(ratio);
+      const tx = await contract.setBuyBRatio(ratioInWei);
+      await tx.wait();
+      setTransactionStatus(`BuyB ratio set successful!`);
+    } catch (error) {
+      console.log("Error in setBuyBRatio => ", error);
+      setTransactionStatus(`Transaction failed: ${error.message}`);
+    }
+  }
+
+  const setAtoBSwapRatio = async (ratio) => {
+    try {
+      const contract = await connectContract();
+      const ratioInWei = toTokenA(ratio);
+      const tx = await contract.setAtoBSwapRatio(ratioInWei);
+      await tx.wait();
+      setTransactionStatus(`AtoB Swap ratio set successful!`);
+    } catch (error) {
+      console.log("Error in setAtoBSwapRatio => ", error);
+      setTransactionStatus(`Transaction failed: ${error.message}`);
+    }
+  }
+
+  const setBtoASwapRatio = async (ratio) => {
+    try {
+      const contract = await connectContract();
+      const ratioInWei = toTokenB(ratio);
+      const tx = await contract.setBtoASwapRatio(ratioInWei);
+      await tx.wait();
+      setTransactionStatus(`BtoA Swap ratio set successful!`);
+    } catch (error) {
+      console.log("Error in setBtoASwapRatio => ", error);
+      setTransactionStatus(`Transaction failed: ${error.message}`);
+    }
+  }
+
+  const setSellARatio = async (ratio) => {
+    try {
+      const contract = await connectContract();
+      const ratioInWei = toWei(ratio);
+      const tx = await contract.setSellARatio(ratioInWei);
+      await tx.wait();
+      setTransactionStatus(`SellA ratio set successful!`);
+    } catch (error) {
+      console.log("Error in setSellARatio => ", error);
+      setTransactionStatus(`Transaction failed: ${error.message}`);
+    }
+  }
+  const setSellBRatio = async (ratio) => {
+    try {
+      const contract = await connectContract();
+      const ratioInWei = toWei(ratio);
+      const tx = await contract.setSellBRatio(ratioInWei);
+      await tx.wait();
+      setTransactionStatus(`SellB ratio set successful!`);
+    } catch (error) {
+      console.log("Error in setSellBRatio => ", error);
+      setTransactionStatus(`Transaction failed: ${error.message}`);
+    }
+  }
+
+  const setAtoBSwapRatioAsDefault = async (ratio) => {
+    try {
+      const contract = await connectContract();
+      const ratioInWei = toTokenA(ratio);
+      const tx = await contract.setAtoBSwapRatioAsDefault(ratioInWei);
+      await tx.wait();
+      setTransactionStatus(`AtoB Swap ratio set as default successful!`);
+    } catch (error) {
+      console.log("Error in setAtoBSwapRatioAsDefault => ", error);
+      setTransactionStatus(`Transaction failed: ${error.message}`);
+    }
+  }
+
+  const setBtoASwapRatioAsDefault = async (ratio) => {
+    try {
+      const contract = await connectContract();
+      const ratioInWei = toTokenB(ratio);
+      const tx = await contract.setBtoASwapRatioAsDefault(ratioInWei);
+      await tx.wait();
+      setTransactionStatus(`BtoA Swap ratio set as default successful!`);
+    } catch (error) {
+      console.log("Error in setBtoASwapRatioAsDefault => ", error);
+      setTransactionStatus(`Transaction failed: ${error.message}`);
+    }
+  }
+
+  const setSellARatioAsDefault = async (ratio) => {
+    try {
+      const contract = await connectContract();
+      const ratioInWei = toWei(ratio);
+      const tx = await contract.setSellARatioAsDefault(ratioInWei);
+      await tx.wait();
+      setTransactionStatus(`SellA ratio set as default successful!`);
+    } catch (error) {
+      console.log("Error in setSellARatioAsDefault => ", error);
+      setTransactionStatus(`Transaction failed: ${error.message}`);
+    }
+  }
+  const setSellBRatioAsDefault = async (ratio) => {
+    try {
+      const contract = await connectContract();
+      const ratioInWei = toWei(ratio);
+      const tx = await contract.setSellBRatioAsDefault(ratioInWei);
+      await tx.wait();
+      setTransactionStatus(`SellB ratio set as default successful!`);
+    } catch (error) {
+      console.log("Error in setSellBRatioAsDefault => ", error);
+      setTransactionStatus(`Transaction failed: ${error.message}`);
+    }
+  }
+
+  const setFeePercentage = async (ratio) => {
+    try {
+      const contract = await connectContract();
+      const ratioInWei = toWei(ratio);
+      const tx = await contract.setFeePercentage(ratioInWei);
+      await tx.wait();
+      setTransactionStatus(`Fee percentage set successful!`);
+    } catch (error) {
+      console.log("Error in setFeePercentage => ", error);
+      setTransactionStatus(`Transaction failed: ${error.message}`);
+    }
+  }
+
+  const setFeeAddress = async (address) => {
+    try {
+      const contract = await connectContract();
+      const addressInWei = toWei(address);
+      const tx = await contract.setFeeAddress(addressInWei);
+      await tx.wait();
+      setTransactionStatus(`Fee address set successful!`);
+    } catch (error) {
+      console.log("Error in setFeeAddress => ", error);
+      setTransactionStatus(`Transaction failed: ${error.message}`);
+    }
+  }
+
+
+
   return (
-    <ContractContext.Provider value={{ contract, getTokenAAddress, getTokenBAddress, connectToWallet, account, getBuyARatio, getBuyBRatio, buyTokenA, buyTokenB, transactionStatus, setTransactionStatus, getTokenAAmount, getTokenBAmount, getFeePercentage, getSellARatio, getSellBRatio, sellTokenA, sellTokenB, hasValideAllowance, increaseAllowance, getAtoBSwapRatio, getBtoASwapRatio, swapTokenAToTokenB, swapTokenBToTokenA, setMaxSwapAmountForTokenAFunc, setMaxSwapAmountForTokenBFunc }}>
+    <ContractContext.Provider value={{ contract, getTokenAAddress, getTokenBAddress, connectToWallet, account, getBuyARatio, getBuyBRatio, buyTokenA, buyTokenB, transactionStatus, setTransactionStatus, getTokenAAmount, getTokenBAmount, getFeePercentage, getSellARatio, getSellBRatio, sellTokenA, sellTokenB, hasValideAllowance, increaseAllowance, getAtoBSwapRatio, getBtoASwapRatio, swapTokenAToTokenB, swapTokenBToTokenA, setMaxSwapAmountForTokenAFunc, setMaxSwapAmountForTokenBFunc, setBuyARatio, setBuyBRatio, setAtoBSwapRatio, setBtoASwapRatio, setSellARatio, setSellBRatio, setAtoBSwapRatioAsDefault, setBtoASwapRatioAsDefault, setSellARatioAsDefault, setSellBRatioAsDefault, setFeePercentage, setFeeAddress , getMaxSwapAmountForA, getMaxSwapAmountForB, getFeeAddress }}>
       {children}
     </ContractContext.Provider>
   )
