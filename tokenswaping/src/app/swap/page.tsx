@@ -81,44 +81,35 @@ const Page = () => {
   const getSwapRatio = async () => {
     if (fromToken === "tokenA" && toToken === "tokenB") {
       const ratio = await getAtoBSwapRatio();
-      console.log("ratio A-B => ", ratio);
       setSwapRatio(ratio);
     } else if (fromToken === "tokenB" && toToken === "tokenA") {
       const ratio = await getBtoASwapRatio();
-      console.log("ratio B-A => ", ratio);
       setSwapRatio(ratio);
     } else if (fromToken === "tokenA" && toToken === "matic") {
       const ratio = await getSellARatio();
-      console.log("ratio A-MATIC => ", ratio);
       setSwapRatio(ratio);
     } else if (fromToken === "tokenB" && toToken === "matic") {
       const ratio = await getSellBRatio();
-      console.log("ratio B-MATIC => ", ratio);
       setSwapRatio(ratio);
     } else if (fromToken === "matic" && toToken === "tokenA") {
       const ratio = await getBuyARatio();
-      console.log("ratio A-MATIC => ", ratio);
       setSwapRatio(ratio);
     } else if (fromToken === "matic" && toToken === "tokenB") {
       const ratio = await getBuyBRatio();
-      console.log("ratio matic-B => ", ratio);
       setSwapRatio(ratio);
     }
   };
 
   const hasAllowanceAmount = async () => {
-    console.log("HasAllowance called => ", fromToken);
 
     if (fromToken === "tokenA") {
       const tokenAAddress = await getTokenAAddress();
       const allowanceAmount = await hasValideAllowance(tokenAAddress , 'tokenA');
-      console.log("allowanceAmount => ", allowanceAmount);
 
       setApproveAmount(parseFloat(allowanceAmount).toFixed(3));
     } else if (fromToken === "tokenB") {
       const tokenBAddress = await getTokenBAddress();
       const allowanceAmount = await hasValideAllowance(tokenBAddress , 'tokenB');
-      console.log("allowanceAmount => ", allowanceAmount);
       setApproveAmount(parseFloat(allowanceAmount).toFixed(3));
     } else {
       console.log("Invalid Token choice for token approval");
@@ -139,7 +130,6 @@ const Page = () => {
 
   const handleFromAmountChange = (e: any) => {
     const value = e.target.value;
-    console.log("Swap Amoun => " , value ," Approve -> " , approveAmount);
     
     let decimals;
     if (fromToken === "tokenA") {
@@ -164,7 +154,6 @@ const Page = () => {
       setSwapBottonStatis(true);
       decimals = MATIC_DECIMAL;
     }
-    // console.log("Lmioy => ", value, " Approvre ==> ", approveAmount);
     const limitedValue = limitDecimals(value, decimals);
 
     if (!value) {
@@ -379,7 +368,7 @@ const Page = () => {
               </Button>
             </>
           )}
-          {/* <Button variant="solid" className="w-full mt-2 bg-purple-600" onClick={handleApproveTokenFunc} >
+          {/* <Button variant="outline" className="w-full mt-2 bg-purple-600" onClick={handleApproveTokenFunc} >
             Approve {approveToken}
           </Button> */}
           {loading ? (

@@ -14,7 +14,6 @@ const ContractContextProvider = ({ children }) => {
   const [transactionStatus, setTransactionStatus] = useState("");
 
   useEffect(() => {
-    console.log("Calling connectContract");
     const contract = connectContract();
     setContract(contract);
 
@@ -36,8 +35,6 @@ const ContractContextProvider = ({ children }) => {
   const hasValideAllowance = async (address, type) => {
     try {
       const contractObj = await connectContract();
-      // const address = await contractObj.tokenA();
-      // console.log("Token Address === ", address);
       const tokenContractObj = await getTokenContract(address);
       const data = await tokenContractObj.allowance(
         account,
@@ -45,11 +42,9 @@ const ContractContextProvider = ({ children }) => {
       );
       if (type === 'tokenA') {
         const result = toEthA(data);
-        console.log("allowance === ", result);
         return result;
       } else if (type === 'tokenB') {
         const result = toEthB(data);
-        console.log("allowance === ", result);
         return result;
 
       }
@@ -59,34 +54,25 @@ const ContractContextProvider = ({ children }) => {
   }
   const increaseAllowance = async (amount, tokenType) => {
     try {
-      // console.log("Amount = ", amount);
-      console.log("Token Type = ", tokenType);
-
-
       const contractObj = await connectContract();
       let address;
       if (tokenType === "TokenA") {
-        console.log("Amount in tokenA = ", toTokenA(amount));
         address = await contractObj.tokenA();
         const tokenContractObj = await getTokenContract(address);
         const data = await tokenContractObj.approve(
           contractAddress,
           toTokenA(amount)
         );
-        console.log("DAta = ", data);
       } else if (tokenType === "TokenB") {
-        console.log("Amount in tokenB = ", toTokenB(amount));
         address = await contractObj.tokenB();
         const tokenContractObj = await getTokenContract(address);
         const data = await tokenContractObj.approve(
           contractAddress,
           toTokenB(amount)
         );
-        console.log("DAta = ", data);
       } else {
         console.log("Not valid token type");
       }
-      console.log("Token Type = ", address);
     } catch (e) {
       return console.log("Error at Increase allowence = ", e);
     }
@@ -97,10 +83,8 @@ const ContractContextProvider = ({ children }) => {
   const getTokenAAmount = async (account) => {
     try {
       const contract = await connectContract();
-      console.log("tokenAAmount address => ", account);
       const tokenAAmount = await contract.tokenBalanceA(account);
       const result = ethers.utils.formatEther(tokenAAmount) * MATIC_DECIMAL / A_DECIMAL;
-      console.log("tokenAAmount => ", result);
       return result;
     } catch (error) {
       console.log("error in getTokenAAmount function => ", error);
@@ -112,7 +96,6 @@ const ContractContextProvider = ({ children }) => {
       const contract = await connectContract();
       const tokenBAmount = await contract.tokenBalanceB(account);
       const result = ethers.utils.formatEther(tokenBAmount) * MATIC_DECIMAL / B_DECIMAL;
-      console.log("tokenBAmount => ", result);
       return result;
     } catch (error) {
       console.log("error in getTokenBAmount function => ", error);
@@ -124,7 +107,6 @@ const ContractContextProvider = ({ children }) => {
       const contract = await connectContract();
       const feePercentage = await contract.feePercentage();
       const result = ethers.BigNumber.from(feePercentage).toNumber();
-      console.log("feePercentage => ", result);
       return feePercentage / 1000;
     } catch (error) {
       console.log("error in getFeePercentage function => ", error);
@@ -136,7 +118,6 @@ const ContractContextProvider = ({ children }) => {
       const contract = await connectContract();
       const amount = await contract.maxSwapAmountForA();
       const result = toEthA(amount);
-      console.log("maxSwapAmountForA => ", result);
       return result;
     } catch (error) {
       console.log("error in getMaxSwapAmountForA function => ", error);
@@ -148,7 +129,6 @@ const ContractContextProvider = ({ children }) => {
       const contract = await connectContract();
       const amount = await contract.maxSwapAmountForB();
       const result = toEthB(amount);
-      console.log("maxSwapAmountForB => ", result);
       return result;
     } catch (error) {
       console.log("error in getMaxSwapAmountForB function => ", error);
@@ -160,7 +140,6 @@ const ContractContextProvider = ({ children }) => {
       const contract = await connectContract();
       const feeAddress = await contract.feeAddress();
       const result = feeAddress;
-      console.log("feeAddress => ", result);
       return result;
     } catch (error) {
       console.log("error in getFeeAddress function => ", error);
@@ -172,8 +151,6 @@ const ContractContextProvider = ({ children }) => {
       const contract = await connectContract();
       const buyARatio = await contract.buyARatio();
       const result = ethers.utils.formatEther(buyARatio);
-      console.log("buyARatio => ", buyARatio);
-
       return result * MATIC_DECIMAL / A_DECIMAL;
     } catch (error) {
       console.log("error in getBuyARatio function => ", error);
@@ -185,7 +162,6 @@ const ContractContextProvider = ({ children }) => {
       const contract = await connectContract();
       const buyBRatio = await contract.buyBRatio();
       const result = ethers.utils.formatEther(buyBRatio);
-      console.log("buyBRatio => ", result);
       return result * MATIC_DECIMAL / B_DECIMAL;
     } catch (error) {
       console.log("error in getBuyBRatio function => ", error);
@@ -197,7 +173,6 @@ const ContractContextProvider = ({ children }) => {
       const contract = await connectContract();
       const sellARatio = await contract.sellARatio();
       const result = ethers.utils.formatEther(sellARatio);
-      console.log("sellARatio => ", result);
       return result * MATIC_DECIMAL / A_DECIMAL;
     } catch (error) {
       console.log("error in getSellARatio function => ", error);
@@ -209,7 +184,6 @@ const ContractContextProvider = ({ children }) => {
       const contract = await connectContract();
       const sellBRatio = await contract.sellBRatio();
       const result = ethers.utils.formatEther(sellBRatio);
-      console.log("sellBRatio => ", result);
       return result * MATIC_DECIMAL / B_DECIMAL;
     } catch (error) {
       console.log("error in getSellBRatio function => ", error);
@@ -221,7 +195,6 @@ const ContractContextProvider = ({ children }) => {
       const contract = await connectContract();
       const atoBSwapRatio = await contract.AtoBSwapRatio();
       const result = ethers.utils.formatEther(atoBSwapRatio);
-      console.log("atoBSwapRatio => ", result * A_DECIMAL / B_DECIMAL);
       return result * A_DECIMAL / B_DECIMAL;
     } catch (error) {
       console.log("error in getAtoBSwapRatio function => ", error);
@@ -232,7 +205,6 @@ const ContractContextProvider = ({ children }) => {
       const contract = await connectContract();
       const btoASwapRatio = await contract.BtoASwapRatio();
       const result = ethers.utils.formatEther(btoASwapRatio);
-      console.log("btoASwapRatio => ", result * A_DECIMAL);
       return result * A_DECIMAL;
     } catch (error) {
       console.log("error in getBtoASwapRatio function => ", error);
@@ -242,10 +214,7 @@ const ContractContextProvider = ({ children }) => {
   const getTokenAAddress = async () => {
     try {
       const contract = await connectContract();
-
-      console.log("Calling connectContract in getTokenAAddress", contract);
       const tokenAddress = await contract.tokenA();
-      console.log("tokenAddress in getTokenAAddress => ", tokenAddress);
       return tokenAddress;
     } catch (error) {
       console.log("error in getTokenAAddress function => ", error);
@@ -255,9 +224,7 @@ const ContractContextProvider = ({ children }) => {
   const getTokenBAddress = async () => {
     try {
       const contract = await connectContract();
-      console.log("Calling connectContract in getTokenBAddress", contract);
       const tokenAddress = await contract.tokenB();
-      console.log("tokenAddress => ", tokenAddress);
       return tokenAddress;
     } catch (error) {
       console.log("error in getTokenBAddress function => ", error);
@@ -269,11 +236,9 @@ const ContractContextProvider = ({ children }) => {
 
   const buyTokenA = async (amountMatic) => {
     try {
-      console.log("Called buyTokenA => ", amountMatic);
 
       const contract = await connectContract();
       const amountInWei = toWei(amountMatic);
-      console.log("amountInWei => ", amountInWei);
 
       const tx = await contract.buyTokenA({
         value: amountInWei,
@@ -302,7 +267,6 @@ const ContractContextProvider = ({ children }) => {
     try {
       const contract = await connectContract();
       const amountInWei = toTokenA(amountMatic);
-      console.log("amountInWei => ", amountInWei);
 
       const tx = await contract.swapAtoMatic(amountInWei);
       await tx.wait();

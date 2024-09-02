@@ -51,27 +51,20 @@ const Page = () => {
   const getTokenAAmountFunc = async (account: any) => {
     const result = await getTokenAAmount(account);
 
-    console.log("getTokenAAmount => ", result);
-
     setTokenAAmount(result);
   };
   const getTokenBAmountFunc = async (account: any) => {
     const result = await getTokenBAmount(account);
-    console.log("getTokenBAmount => ", result);
-    setTokenBAmount(result);
+   setTokenBAmount(result);
   };
 
   const walletConnect = async () => {
     const account = await connectToWallet();
-    console.log("account => ", account);
     getTokenAAmountFunc(account);
     getTokenBAmountFunc(account);
     const fee = await getFeePercentage();
-    console.log("fee => ", fee);
-
+ 
     setFeePercentage(fee.toString());
-    // console.log("tokenAAmount => ", tokenAAmount);
-    // console.log("tokenBAmount => ", tokenBAmount);
     const ratioA = await getBuyARatio();
     const a = (ratioA * MATIC_DECIMAL) / A_DECIMAL;
     setARatio(a.toString());
@@ -95,14 +88,12 @@ const Page = () => {
     if (tokenType === "TokenA") {
       setAmountMaticTokenA(amountMatic);
       const ratio = await getBuyARatio();
-      // setARatio(ratio);
       setReceivedAmountTokenA(
         ((amountMatic * ratio * MATIC_DECIMAL) / A_DECIMAL).toFixed(2)
       );
     } else if (tokenType === "TokenB") {
       setAmountMaticTokenB(amountMatic);
       const ratio = await getBuyBRatio();
-      // setBRatio(ratio);
       setReceivedAmountTokenB(
         ((amountMatic * ratio * MATIC_DECIMAL) / B_DECIMAL).toFixed(2)
       );
@@ -113,14 +104,12 @@ const Page = () => {
     if (tokenType === "TokenA") {
       setAmountTokenAMatic(amountMatic);
       const ratio = await getSellARatio();
-      // setARatio(ratio);
       setReceivedAmountmaticFromTokenA(
         ((amountMatic * ratio * MATIC_DECIMAL) / A_DECIMAL).toFixed(2)
       );
     } else if (tokenType === "TokenB") {
       setAmountTokenBMatic(amountMatic);
       const ratio = await getSellBRatio();
-      // setBRatio(ratio);
       setReceivedAmountmaticFromTokenB(
         ((amountMatic * ratio * MATIC_DECIMAL) / B_DECIMAL).toFixed(2)
       );
@@ -172,11 +161,6 @@ const Page = () => {
     }
   };
   const handleSellToken = async (tokenType: any, amountMatic: any) => {
-
-    console.log("amountMatic => ", amountMatic);
-    console.log("tokenType => ", tokenType);
-    
-    
 
     if (
       !amountMatic ||
@@ -300,7 +284,7 @@ const Page = () => {
           </CardContent>
           <CardFooter className="space-y-2">
             <Button
-              variant="solid"
+              variant="outline"
               className="w-full mt-2 bg-purple-600"
               onClick={() => handleBuyToken("TokenB", amountMaticTokenB)}
             >

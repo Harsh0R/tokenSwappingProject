@@ -112,7 +112,6 @@ const Page = () => {
 
     const getFeePercentageFunc = async () => {
       const result = await getFeePercentage();
-      console.log("res ==> ", result);
       setFeePercentageVar(result);
     };
 
@@ -132,8 +131,6 @@ const Page = () => {
   }, []);
 
   const handleSetTokenASwapAmount = (tokenType: string, amount: any) => {
-    console.log("called");
-    console.log("tokenType => ", tokenType);
 
     if (tokenType === "tokenA") {
       setMaxSwapAmountForTokenAFunc(amount);
