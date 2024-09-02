@@ -21,6 +21,6 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "src/Context/contractContect.jsx", "src/Constants/Constants.jsx", "src/app/swap/page.jsx"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "src/Context/contractContect.jsx", "src/Constants/Constants.jsx", "src/app/swap/page.tsx"],
   "exclude": ["node_modules"]
 }

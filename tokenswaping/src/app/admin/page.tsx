@@ -17,7 +17,6 @@ const Page = () => {
   const [inToken, setInToken] = useState("");
 
   const [tokenAAmountLimit, setTokenAAmountLimit] = useState("");
-  const [tokenBAmountLimit, setTokenBAmountLimit] = useState("");
   const [buyARatioVar, setBuyARatioVar] = useState("");
   const [buyBRatioVar, setBuyBRatioVar] = useState("");
   const [atoBSwapRatioVar, setAtoBSwapRatioVar] = useState("");
@@ -32,6 +31,7 @@ const Page = () => {
   const [sellBRatioAsDefaultVar, setSellBRatioAsDefaultVar] = useState("");
   const [feePercentageVar, setFeePercentageVar] = useState("");
   const [feeAddressVar, setFeeAddressVar] = useState("");
+  const [errorLogs, setErrorLogs] = useState("");
 
   const {
     setMaxSwapAmountForTokenAFunc,
@@ -50,7 +50,6 @@ const Page = () => {
     setFeeAddress,
     getFeeAddress,
     getMaxSwapAmountForA,
-    getMaxSwapAmountForB,
     getBuyARatio,
     getBuyBRatio,
     getAtoBSwapRatio,
@@ -85,10 +84,7 @@ const Page = () => {
       const result = await getMaxSwapAmountForA();
       setTokenAAmountLimit(result);
     };
-    const getMaxSwapAmountForBFunc = async () => {
-      const result = await getMaxSwapAmountForB();
-      setTokenBAmountLimit(result);
-    };
+
     const getBuyARatioFunc = async () => {
       const result = await getBuyARatio();
       setBuyARatioVar(result);
@@ -114,19 +110,25 @@ const Page = () => {
       setSellBRatioVar(result);
     };
 
+    const getFeePercentageFunc = async () => {
+      const result = await getFeePercentage();
+      console.log("res ==> ", result);
+      setFeePercentageVar(result);
+    };
+
     getAtoBSwapRatioAsDefaultFunc();
     getBtoASwapRatioAsDefaultFunc();
     getSellARatioAsDefaultFunc();
     getSellBRatioAsDefaultFunc();
     getFeeAddressFunc();
     getMaxSwapAmountForAFunc();
-    getMaxSwapAmountForBFunc();
     getBuyARatioFunc();
     getBuyBRatioFunc();
     getAtoBSwapRatioFunc();
     getBtoASwapRatioFunc();
     getSellARatioFunc();
     getSellBRatioFunc();
+    getFeePercentageFunc();
   }, []);
 
   const handleSetTokenASwapAmount = (tokenType: string, amount: any) => {
@@ -170,10 +172,31 @@ const Page = () => {
     setSellBRatioAsDefault(sellBRatioAsDefaultVar);
   };
   const handleSetFeePercentage = () => {
+    const minFeePercentage = 0.001;
+    if (parseFloat(feePercentageVar) < minFeePercentage) {
+      setErrorLogs(`Fee percentage cannot be less than ${minFeePercentage}%`);
+      return;
+    }
+
+    setErrorLogs("");
     setFeePercentage(feePercentageVar);
   };
   const handleSetFeeAddress = () => {
     setFeeAddress(feeAddressVar);
+  };
+
+  const handleInputChange = (e: any) => {
+    const value = e.target.value;
+    const minFeePercentage = 0.001;
+
+    setFeePercentageVar(value);
+
+    // Validate the input value
+    if (parseFloat(value) < minFeePercentage) {
+      setErrorLogs(`Fee percentage cannot be less than ${minFeePercentage}%`);
+    } else {
+      setErrorLogs(""); // Clear the error message if the value is valid
+    }
   };
 
   return (
@@ -384,19 +407,25 @@ const Page = () => {
           <div className="flex items-center mt-8 sm:mt-5 justify-between w-full">
             <div className="flex flex-col items-left justify-center rounded-lg space-y-2">
               <div className="text-white rounded-lg shadow-md">
-                Set Fee Percentage : (min : 0.001%)
+                Set Fee Percentage : (min : 0.001%) , (current :{" "}
+                {feePercentageVar}%)
               </div>
               <Input
-                placeholder="Enter fee recipient address"
-                className="bg-gray-900 text-white rounded-lg"
-                onChange={(e) => setFeePercentageVar(e.target.value)}
+                placeholder="Enter fee percentage"
+                className={`bg-gray-900 text-white rounded-lg ${
+                  errorLogs ? "border-red-500" : "border-gray-700"
+                }`}
+                value={feePercentageVar}
+                onChange={handleInputChange}
               />
+              {errorLogs && <p className="text-red-500">{errorLogs}</p>}
             </div>
             <div className="flex flex-col items-center justify-center rounded-lg">
               <Button
                 variant="outline"
                 className="tech_btn cnctwlthedBtn flex items-center border-none rounded-full h-12 outline-none relative w-40 active:translate-y-1 active:scale-90 duration-150 ease-linear"
                 onClick={handleSetFeePercentage}
+                disabled={!!errorLogs} // Disable the button if there's an error
               >
                 <i></i>
                 <i></i>
@@ -406,6 +435,7 @@ const Page = () => {
               </Button>
             </div>
           </div>
+
           <div className="flex items-center mt-8 sm:mt-5 justify-between w-full">
             <div className="flex flex-col items-left justify-center rounded-lg space-y-2">
               <div className="text-white rounded-lg shadow-md">
@@ -435,17 +465,59 @@ const Page = () => {
           <div className="flex items-center mt-8 sm:mt-5 justify-between w-full">
             <div className="flex flex-col items-left justify-center rounded-lg space-y-2">
               <div className="text-white rounded-lg shadow-md">
+                Set Sell Rate of A as Default :
+              </div>
+              <div className="text-sm text-gray-400">
+                Current A to B Swap Rate : {sellARatioAsDefaultVar}
+              </div>
+            </div>
+            <div className="flex flex-col items-center justify-center rounded-lg">
+              <Button
+                variant="outline"
+                className="tech_btn cnctwlthedBtn flex items-center border-none rounded-full h-12 outline-none relative w-40 active:translate-y-1 active:scale-90 duration-150 ease-linear"
+                onClick={handleSetSellARatioAsDefault}
+              >
+                <i></i>
+                <i></i>
+                <span className="items-center bg-[#000000a6] rounded-full flex justify-center left-0 capitalize overflow-hidden font-medium">
+                  Submit
+                </span>
+              </Button>
+            </div>
+          </div>
+
+          <div className="flex items-center mt-8 sm:mt-5 justify-between w-full">
+            <div className="flex flex-col items-left justify-center rounded-lg space-y-2">
+              <div className="text-white rounded-lg shadow-md">
+                Set Sell Rate of B as Default :
+              </div>
+              <div className="text-sm text-gray-400">
+                Current B to A Swap Rate: {sellBRatioAsDefaultVar}
+              </div>
+            </div>
+            <div className="flex flex-col items-center justify-center rounded-lg">
+              <Button
+                variant="outline"
+                className="tech_btn cnctwlthedBtn flex items-center border-none rounded-full h-12 outline-none relative w-40 active:translate-y-1 active:scale-90 duration-150 ease-linear"
+                onClick={handleSetSellBRatioAsDefault}
+              >
+                <i></i>
+                <i></i>
+                <span className="items-center bg-[#000000a6] rounded-full flex justify-center left-0 capitalize overflow-hidden font-medium">
+                  Submit
+                </span>
+              </Button>
+            </div>
+          </div>
+
+          <div className="flex items-center mt-8 sm:mt-5 justify-between w-full">
+            <div className="flex flex-col items-left justify-center rounded-lg space-y-2">
+              <div className="text-white rounded-lg shadow-md">
                 Set A to B Swap Rate as Default :
               </div>
               <div className="text-sm text-gray-400">
                 Current A to B Swap Rate : {atoBSwapRatioAsDefaultVar}
               </div>
-              {/* <Input
-                placeholder="Enter amount"
-                className="bg-gray-900 text-white rounded-lg"
-                disabled
-                onChange={(e) => setAtoBSwapRatioAsDefaultVar(e.target.value)}
-              /> */}
             </div>
             <div className="flex flex-col items-center justify-center rounded-lg">
               <Button
@@ -470,12 +542,6 @@ const Page = () => {
               <div className="text-sm text-gray-400">
                 Current B to A Swap Rate: {btoASwapRatioAsDefaultVar}
               </div>
-              {/* <Input
-                placeholder="Enter Amount"
-                disabled
-                className="bg-gray-900 text-white rounded-lg"
-                onChange={(e) => setTokenAAmountLimit(e.target.value)}
-              /> */}
             </div>
             <div className="flex flex-col items-center justify-center rounded-lg">
               <Button

@@ -24,6 +24,14 @@ export function toEth(amount, decimal = 18) {
   const toEth = ethers.utils.formatUnits(amount, decimal);
   return toEth.toString();
 }
+export function toEthA(amount, decimal = 12) {
+  const toEth = ethers.utils.formatUnits(amount, decimal);
+  return toEth.toString();
+}
+export function toEthB(amount, decimal = 6) {
+  const toEth = ethers.utils.formatUnits(amount, decimal);
+  return toEth.toString();
+}
 
 export const checkIfWalletConnected = async () => {
   try {
