@@ -15,8 +15,10 @@ const Page = () => {
   const [amountMaticTokenB, setAmountMaticTokenB] = useState("");
   const [amountTokenAMatic, setAmountTokenAMatic] = useState("");
   const [amountTokenBMatic, setAmountTokenBMatic] = useState("");
-  const [receivedAmountmaticFromTokenA, setReceivedAmountmaticFromTokenA] = useState("");
-  const [receivedAmountmaticFromTokenB, setReceivedAmountmaticFromTokenB] = useState("");
+  const [receivedAmountmaticFromTokenA, setReceivedAmountmaticFromTokenA] =
+    useState("");
+  const [receivedAmountmaticFromTokenB, setReceivedAmountmaticFromTokenB] =
+    useState("");
   const [receivedAmountTokenA, setReceivedAmountTokenA] = useState("");
   const [receivedAmountTokenB, setReceivedAmountTokenB] = useState("");
   const [tokenAAmount, setTokenAAmount] = useState("");
@@ -55,7 +57,7 @@ const Page = () => {
   };
   const getTokenBAmountFunc = async (account: any) => {
     const result = await getTokenBAmount(account);
-   setTokenBAmount(result);
+    setTokenBAmount(result);
   };
 
   const walletConnect = async () => {
@@ -63,7 +65,7 @@ const Page = () => {
     getTokenAAmountFunc(account);
     getTokenBAmountFunc(account);
     const fee = await getFeePercentage();
- 
+
     setFeePercentage(fee.toString());
     const ratioA = await getBuyARatio();
     const a = (ratioA * MATIC_DECIMAL) / A_DECIMAL;
@@ -81,7 +83,7 @@ const Page = () => {
 
   useEffect(() => {
     walletConnect();
-  }, []);
+  });
 
   const handleChangeReceivedAmount = async (e: any, tokenType: any) => {
     const amountMatic = e.target.value;
@@ -129,14 +131,14 @@ const Page = () => {
     }
 
     try {
-        await increaseAllowance(amountMatic.toString() , tokenType);
-    
+      await increaseAllowance(amountMatic.toString(), tokenType);
+
       setTransactionStatus(`Token purchase successful for ${tokenType}!`);
     } catch (error: any) {
       setTransactionStatus(`Transaction failed: ${error.message}`);
     }
   };
-  
+
   const handleBuyToken = async (tokenType: any, amountMatic: any) => {
     if (
       !amountMatic ||
@@ -161,7 +163,6 @@ const Page = () => {
     }
   };
   const handleSellToken = async (tokenType: any, amountMatic: any) => {
-
     if (
       !amountMatic ||
       isNaN(parseFloat(amountMatic)) ||
@@ -398,14 +399,14 @@ const Page = () => {
           </CardContent>
           <CardFooter className=" flex flex-col mt-2">
             <Button
-              variant={'outline'}
+              variant={"outline"}
               className="w-full mt-2"
               onClick={() => handleApproveToken("TokenB", tokenBAmount)}
             >
               Approve TokenB
             </Button>
             <Button
-              variant={'outline'}
+              variant={"outline"}
               className="w-full mt-2"
               onClick={() => handleSellToken("TokenB", amountTokenBMatic)}
             >

@@ -1,34 +1,34 @@
 import { ethers } from "ethers";
-import { contractAddress, swapAbi, tokenAbi } from "../Constants/Constants";
+import { SwappingContractAddress, StakingContractAddress, swapAbi, tokenAbi, stakeAbi, myCustomTokenAbi } from "../Constants/Constants";
 
 
-export const A_DECIMAL = 10**12;
-export const B_DECIMAL = 10**6;
-export const MATIC_DECIMAL = 10**18;
+export const A_DECIMAL = 10 ** 12;
+export const B_DECIMAL = 10 ** 6;
+export const MATIC_DECIMAL = 10 ** 18;
 
 
-export function toWei(amount, decimal = 18) {
+export function toWei(amount: string, decimal: number = 18) {
   const toWei = ethers.utils.parseUnits(amount, decimal);
   return toWei.toString();
 }
-export function toTokenA(amount, decimal = 12) {
+export function toTokenA(amount: string, decimal: number = 12) {
   const toWei = ethers.utils.parseUnits(amount, decimal);
   return toWei.toString();
 }
-export function toTokenB(amount, decimal = 6) {
+export function toTokenB(amount: string, decimal: number = 6) {
   const toWei = ethers.utils.parseUnits(amount, decimal);
   return toWei.toString();
 }
 
-export function toEth(amount, decimal = 18) {
+export function toEth(amount: string, decimal: number = 18) {
   const toEth = ethers.utils.formatUnits(amount, decimal);
   return toEth.toString();
 }
-export function toEthA(amount, decimal = 12) {
+export function toEthA(amount: string, decimal: number = 12) {
   const toEth = ethers.utils.formatUnits(amount, decimal);
   return toEth.toString();
 }
-export function toEthB(amount, decimal = 6) {
+export function toEthB(amount: string, decimal: number = 6) {
   const toEth = ethers.utils.formatUnits(amount, decimal);
   return toEth.toString();
 }
@@ -59,7 +59,7 @@ export const connectWallet = async () => {
       method: "eth_requestAccounts",
     });
     const firstAccount = accounts[0];
-    
+
     return firstAccount;
   } catch (error) {
     console.log("error in connectWallet => ", error);
@@ -70,14 +70,38 @@ export const connectContract = async () => {
   try {
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     const signer = provider.getSigner();
-    const contract = new ethers.Contract(contractAddress, swapAbi, signer);
+    const contract = new ethers.Contract(SwappingContractAddress, swapAbi, signer);
     return contract;
   } catch (error) {
-    console.log("error => ", error);
+    console.log("error in get Swapping contract => ", error);
   }
 };
 
-export const getTokenContract = async (tokenContractAddress) => {
+export const getStakingContract = async () => {
+
+  try {
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
+    const signer = provider.getSigner();
+    const contract = new ethers.Contract(StakingContractAddress, stakeAbi, signer);
+    return contract;
+  } catch (e) {
+    console.log("Error in get staking contract => ", e);
+
+  }
+}
+
+export const getMyCustomTokenContract = async (tokenContractAddress: string) => {
+  try {
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
+    const signer = provider.getSigner();
+    const contract = new ethers.Contract(tokenContractAddress, myCustomTokenAbi, signer);
+    return contract;
+  } catch (e) {
+    console.log("Error in get my custom token contract => ", e);
+  }
+}
+
+export const getTokenContract = async (tokenContractAddress: string) => {
   try {
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     const signer = provider.getSigner();
