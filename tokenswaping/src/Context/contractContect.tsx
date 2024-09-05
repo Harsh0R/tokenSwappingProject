@@ -16,7 +16,7 @@ import {
   getStakingContract,
   getMyCustomTokenContract,
 } from "../Utils/utilsFunctions";
-import { ethers } from "ethers";
+import { BigNumber, ethers } from "ethers";
 import {
   StakingContractAddress,
   SwappingContractAddress,
@@ -47,7 +47,29 @@ const ContractContextProvider = ({ children }: any) => {
   };
 
   // region Swapping Contract Functions
-
+  const hasValideAllowanceForStakingToken = async (
+    address: string,
+    decimal: number
+  ) => {
+    try {
+      const tokenContractObj = await getTokenContract(address);
+      const data = await tokenContractObj?.allowance(
+        account,
+        StakingContractAddress
+      );
+      let result;
+      if (decimal == 18) {
+        result = toEth(data);
+      } else if (decimal == 12) {
+        result = toEthA(data);
+      } else if (decimal == 6) {
+        result = toEthB(data);
+      }
+      return result;
+    } catch (e) {
+      return console.error("Error in hasAllowes == ", e);
+    }
+  };
   const hasValideAllowance = async (address: string, type: string) => {
     try {
       const tokenContractObj = await getTokenContract(address);
@@ -66,6 +88,7 @@ const ContractContextProvider = ({ children }: any) => {
       return console.error("Error in hasAllowes == ", e);
     }
   };
+
   const increaseAllowance = async (amount: number, tokenType: string) => {
     try {
       const contractObj = await connectContract();
@@ -86,6 +109,34 @@ const ContractContextProvider = ({ children }: any) => {
         );
       } else {
         console.log("Not valid token type");
+      }
+    } catch (e) {
+      return console.log("Error at Increase allowence = ", e);
+    }
+  };
+
+  const increaseAllowanceForStakingToken = async (
+    address: string,
+    amount: number,
+    decimal: number
+  ) => {
+    try {
+      const tokenContractObj = await getMyCustomTokenContract(address);
+      if (decimal == 18) {
+        const data = await tokenContractObj?.approve(
+          StakingContractAddress,
+          toWei(amount.toString())
+        );
+      } else if (decimal == 12) {
+        const data = await tokenContractObj?.approve(
+          StakingContractAddress,
+          toTokenA(amount.toString())
+        );
+      } else if (decimal == 6) {
+        const data = await tokenContractObj?.approve(
+          StakingContractAddress,
+          toTokenB(amount.toString())
+        );
       }
     } catch (e) {
       return console.log("Error at Increase allowence = ", e);
@@ -569,6 +620,8 @@ const ContractContextProvider = ({ children }: any) => {
     try {
       const contract = await getStakingContract();
       const tokens = await contract?.getAllTokens();
+      console.log("Tokens =>", tokens);
+
       return tokens;
     } catch (error) {
       console.log("Error in getAllTokens => ", error);
@@ -577,19 +630,53 @@ const ContractContextProvider = ({ children }: any) => {
 
   const getTokenData = async (address: string) => {
     try {
+      console.log("address =>", address);
+      console.log("address =>", StakingContractAddress);
+      const account = await connectWallet();
+      console.log("address =>", account);
       const tokenContractObj = await getMyCustomTokenContract(address);
       const name = await tokenContractObj?.name();
       const symbol = await tokenContractObj?.symbol();
       const decimal = await tokenContractObj?.decimals();
       let supply;
+      let balanceOfContract;
+      let balanceOfAccount;
+
+      balanceOfContract = toEth(
+        await tokenContractObj?.balanceOf(StakingContractAddress)
+      );
+      // balanceOfAccount = toEth(await tokenContractObj?.balanceOf(account));
+      // console.log("balanceOfContract =>", balanceOfContract);
+      // console.log("balanceOfAccount =>", balanceOfAccount);
+
       if (decimal == 18) {
         supply = toEth(await tokenContractObj?.totalSupply());
+        balanceOfContract = toEth(
+          await tokenContractObj?.balanceOf(StakingContractAddress)
+        );
+        balanceOfAccount = toEth(await tokenContractObj?.balanceOf(account));
       } else if (decimal == 12) {
         supply = toEthA(await tokenContractObj?.totalSupply());
+        balanceOfAccount = toEthA(await tokenContractObj?.balanceOf(account));
+        balanceOfContract = toEthA(
+          await tokenContractObj?.balanceOf(StakingContractAddress)
+        );
       } else if (decimal == 6) {
         supply = toEthB(await tokenContractObj?.totalSupply());
+        balanceOfAccount = toEthB(await tokenContractObj?.balanceOf(account));
+        balanceOfContract = toEthB(
+          await tokenContractObj?.balanceOf(StakingContractAddress)
+        );
       }
-      return { name, symbol, supply, decimal, address };
+      return {
+        name,
+        symbol,
+        supply,
+        decimal,
+        address,
+        balanceOfContract,
+        balanceOfAccount,
+      };
     } catch (error) {
       console.log("Error in getTokenData => ", error);
     }
@@ -611,8 +698,65 @@ const ContractContextProvider = ({ children }: any) => {
       );
       await tx.wait();
       setTransactionStatus(`Pool created successfully!`);
-    } catch (error) { 
+    } catch (error) {
       console.log("Error in createPool => ", error);
+    }
+  };
+
+  const getAllPoolsId = async () => {
+    try {
+      const contract = await getStakingContract();
+      const allPoolIds = await contract?.getAllPoolIds();
+      return allPoolIds;
+    } catch (error) {
+      console.log("Error in getAllPoolsId => ", error);
+    }
+  };
+
+  const getPoolData = async (poolId: number) => {
+    try {
+      const contract = await getStakingContract();
+      const poolData = await contract?.pools(poolId);
+      console.log("PoolData =>", poolData);
+
+      return poolData;
+    } catch (error) {
+      console.log("Error in getPoolData => ", error);
+    }
+  };
+
+  const stopPool = async (poolId: number) => {
+    try {
+      const contract = await getStakingContract();
+      const tx = await contract?.deactivePool(poolId);
+
+      setTransactionStatus(`Pool stopped successfully!`);
+    } catch (error) {
+      console.log("Error in stopPool => ", error);
+    }
+  };
+
+  const transferTokenToContract = async (
+    amount: number,
+    address: string,
+    decimal: number
+  ) => {
+    try {
+      const contract = await getStakingContract();
+      let newAmount;
+      if (decimal == 18) {
+        newAmount = toWei(amount.toString());
+      } else if (decimal == 12) {
+        newAmount = toTokenA(amount.toString());
+      } else if (decimal == 6) {
+        newAmount = toTokenB(amount.toString());
+      }
+      console.log("Amount to transfer =>", amount);
+
+      const tx = await contract?.transferTokenToContract(newAmount, address);
+      return tx;
+    } catch (error) {
+      console.log("Error in transferTokenToContract => ", error);
     }
   };
 
@@ -663,6 +807,13 @@ const ContractContextProvider = ({ children }: any) => {
         createToken,
         getAllTokens,
         getTokenData,
+        createPool,
+        getAllPoolsId,
+        getPoolData,
+        hasValideAllowanceForStakingToken,
+        increaseAllowanceForStakingToken,
+        transferTokenToContract,
+        stopPool,
       }}
     >
       {children}
