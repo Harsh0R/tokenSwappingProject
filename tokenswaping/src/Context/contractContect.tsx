@@ -760,6 +760,112 @@ const ContractContextProvider = ({ children }: any) => {
     }
   };
 
+  const setMinStakeAmount = async (amount: number, poolId: number) => {
+    try {
+      const contract = await getStakingContract();
+      const tx = await contract?.setMinStakeAmount(amount, poolId);
+      await tx.wait();
+      setTransactionStatus(`Min stake amount set successfully!`);
+    } catch (error) {
+      const errorMessage = (error as Error).message || "Transaction failed";
+      console.log("Error in setMinStakeAmount => ", errorMessage);
+      setTransactionStatus(`Transaction failed: ${errorMessage}`);
+    }
+  };
+
+  const stakeFunc = async (amount: number, poolId: number, decimal: number) => {
+    try {
+      const contract = await getStakingContract();
+      if (decimal == 18) {
+        const tx = await contract?.stake(toWei(amount.toString()), poolId);
+      } else if (decimal == 12) {
+        const tx = await contract?.stake(toTokenA(amount.toString()), poolId);
+      } else if (decimal == 6) {
+        const tx = await contract?.stake(toTokenB(amount.toString()), poolId);
+      }
+    } catch (error) {
+      console.log("Error in stake => ", error);
+    }
+  };
+
+  const calculateRewardFunc = async (poolId: number, decimal: number) => {
+    try {
+      const contract = await getStakingContract();
+      const reward = await contract?.calculateProfit(account, poolId);
+      if (decimal == 18) {
+        return toEth(reward);
+      } else if (decimal == 12) {
+        return toEthA(reward);
+      } else if (decimal == 6) {
+        return toEthB(reward);
+      }
+      return reward;
+    } catch (error) {
+      console.log("Error in calculateReward => ", error);
+    }
+  };
+
+  const withdrawAllAmountFunc = async (poolId: number) => {
+    try {
+      const contract = await getStakingContract();
+      const tx = await contract?.withdrawAllAmount(poolId);
+      await tx.wait();
+      setTransactionStatus(`Withdraw successfully!`);
+    } catch (error) {
+      const errorMessage = (error as Error).message || "Transaction failed";
+      console.log("Error in withdraw => ", errorMessage);
+      setTransactionStatus(`Transaction failed: ${errorMessage}`);
+    }
+  };
+
+  const withdrawSpecificProfitFunc = async (amount: number, poolId: number) => {
+    try {
+      const contract = await getStakingContract();
+      const tx = await contract?.withdrawSpecificProfit(amount, poolId);
+      await tx.wait();
+      setTransactionStatus(`Withdraw successfully!`);
+    } catch (error) {
+      const errorMessage = (error as Error).message || "Transaction failed";
+      console.log("Error in withdrawSpecificProfit => ", errorMessage);
+      setTransactionStatus(`Transaction failed: ${errorMessage}`);
+    }
+  };
+
+  const withdrawProfitFunc = async (poolId: number) => {
+    try {
+      const contract = await getStakingContract();
+      const tx = await contract?.withdrawProfit(poolId);
+      await tx.wait();
+      setTransactionStatus("Withdraw profit successfully!");
+    } catch (error) {
+      const errorMessage = (error as Error).message || "Transaction failed";
+      console.log("Error in withdraw Profit => ", errorMessage);
+      setTransactionStatus(`Transaction failed: ${errorMessage}`);
+    }
+  };
+
+  const showMyBalancesInPoolFunc = async (poolId: number, decimal: number) => {
+    try {
+      const account = await connectWallet();
+      const contract = await getStakingContract();
+      const tx = await contract?.showMyBalancesInPool(account, poolId);
+      if (decimal == 18) {
+        const result = await toEth(tx);
+        return result;
+      } else if (decimal == 12) {
+        const result = await toEthA(tx);
+        return result;
+      } else if (decimal == 6) {
+        const result = await toEthB(tx);
+        return result;
+      }
+    } catch (error) {
+      const errorMessage = (error as Error).message || "Transaction failed";
+      console.log("Error in show balance in pool => ", errorMessage);
+      setTransactionStatus(`Transaction failed: ${errorMessage}`);
+    }
+  };
+
   return (
     <ContractContext.Provider
       value={{
@@ -814,6 +920,13 @@ const ContractContextProvider = ({ children }: any) => {
         increaseAllowanceForStakingToken,
         transferTokenToContract,
         stopPool,
+        setMinStakeAmount,
+        stakeFunc,
+        withdrawAllAmountFunc,
+        withdrawProfitFunc,
+        withdrawSpecificProfitFunc,
+        showMyBalancesInPoolFunc,
+        calculateRewardFunc,
       }}
     >
       {children}

@@ -11,7 +11,14 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ClipboardCopyIcon } from "@heroicons/react/outline";
-import { toEth, toEthA, toEthB, toTokenA, toTokenB, toWei } from "@/Utils/utilsFunctions";
+import {
+  toEth,
+  toEthA,
+  toEthB,
+  toTokenA,
+  toTokenB,
+  toWei,
+} from "@/Utils/utilsFunctions";
 
 const TokenCreationPage = () => {
   const {
@@ -31,8 +38,10 @@ const TokenCreationPage = () => {
   const [transactionStatus, setTransactionStatus] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [amount, setAmount] = useState<number>(0);
+  const [tokenBtnStatus, setTokenBtnStatus] = useState(false);
 
   const handleCreateToken = async () => {
+    setTokenBtnStatus(true);
     if (
       !name ||
       !symbol ||
@@ -40,15 +49,17 @@ const TokenCreationPage = () => {
       initialSupply <= 0 ||
       decimal <= 0
     ) {
+      setTokenBtnStatus(false);
       setErrorMessage("Please fill all the fields");
       return;
     }
 
-    setErrorMessage("");
+    setTransactionStatus("Token creation in progress...");
     await createToken(name, symbol, initialSupply, decimal);
     setTransactionStatus("Token creation in progress...");
     await fetchTokens();
     setTransactionStatus("Token created successfully!");
+    setTokenBtnStatus(false);
   };
 
   const fetchTokens = async () => {
@@ -72,14 +83,17 @@ const TokenCreationPage = () => {
       return;
     }
 
-    const Validamount = await hasValideAllowanceForStakingToken(address , decimal);
+    const Validamount = await hasValideAllowanceForStakingToken(
+      address,
+      decimal
+    );
 
-    if(Validamount<amount){
+    if (Validamount < amount) {
       alert("Insufficient allowance");
       return;
     }
 
-    const tx = await transferTokenToContract(amount, address , decimal);
+    const tx = await transferTokenToContract(amount, address, decimal);
     setTransactionStatus("Token sent successfully!");
   };
 
@@ -135,7 +149,11 @@ const TokenCreationPage = () => {
           />
         </CardContent>
         <CardFooter>
-          <Button onClick={handleCreateToken} className="w-full">
+          <Button
+            onClick={handleCreateToken}
+            disabled={tokenBtnStatus}
+            className="w-full"
+          >
             Create Token
           </Button>
         </CardFooter>

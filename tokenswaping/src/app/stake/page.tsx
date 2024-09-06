@@ -16,6 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ContractContext } from "@/Context/contractContect";
 import React, { useContext, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 const StakePage = () => {
   const {
@@ -28,6 +29,7 @@ const StakePage = () => {
   } = useContext(ContractContext);
 
   const [pools, setPools] = useState<any[]>([]);
+  const router = useRouter();
 
   const fetchPools = async () => {
     const poolsId = await getAllPoolsId();
@@ -51,6 +53,14 @@ const StakePage = () => {
       })
     );
     setPools(poolDetails);
+  };
+
+  const handleStakePool = async (poolId: number) => {
+    try {
+      router.push(`/stake/${poolId}`);
+    } catch (error) {
+      console.error("Error creating pool:", error);
+    }
   };
 
   useEffect(() => {
@@ -94,7 +104,7 @@ const StakePage = () => {
               <div>
                 <Button
                   variant={"secondary"}
-                  // onClick={() => handleStopPool(pool.id)}
+                  onClick={() => handleStakePool(pool.id)}
                   className="w-full"
                 >
                   Stake
