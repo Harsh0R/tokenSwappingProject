@@ -30,29 +30,44 @@ const StakePage = () => {
 
   const [pools, setPools] = useState<any[]>([]);
   const router = useRouter();
+  
 
   const fetchPools = async () => {
-    const poolsId = await getAllPoolsId();
-    const poolDetails = await Promise.all(
-      poolsId.map(async (id: number) => {
-        const data = await getPoolData(id);
-        const stakeTokenData = await getTokenData(data.stakingToken);
-        const rewardTokenData = await getTokenData(data.rewardToken);
+    try {
+      const poolsId = await getAllPoolsId();
+      console.log("Pools ID:", poolsId); // Debugging log
 
-        return {
-          id: data.poolId ? data.poolId.toString() : "N/A", // Convert BigNumber to string with fallback
-          duration: data.duration ? data.duration.toString() : "N/A", // Convert BigNumber to string with fallback
-          rewardRate: data.rewardRate ? data.rewardRate.toString() : "N/A", // Convert BigNumber to string with fallback
-          stakingToken: stakeTokenData.name || "N/A", // Fallback to 'N/A' if undefined
-          rewardToken: rewardTokenData.name || "N/A", // Fallback to 'N/A' if undefined
-          minStakeAmount: data.minStakeAmount
-            ? data.minStakeAmount.toString()
-            : "N/A", // Convert BigNumber to string with fallback
-          active: data.active || false, // Fallback to false if undefined
-        };
-      })
-    );
-    setPools(poolDetails);
+      // Ensure poolsId is an array before calling map
+      if (!poolsId || !Array.isArray(poolsId)) {
+        console.error("Invalid poolsId: Not an array or undefined");
+        setPools([]); // Avoid breaking the UI by setting an empty array
+        return;
+      }
+
+      const poolDetails = await Promise.all(
+        poolsId.map(async (id: number) => {
+          const data = await getPoolData(id);
+          const stakeTokenData = await getTokenData(data.stakingToken);
+          const rewardTokenData = await getTokenData(data.rewardToken);
+
+          return {
+            id: data.poolId ? data.poolId.toString() : "N/A", // Convert BigNumber to string with fallback
+            duration: data.duration ? data.duration.toString() : "N/A", // Convert BigNumber to string with fallback
+            rewardRate: data.rewardRate ? data.rewardRate.toString() : "N/A", // Convert BigNumber to string with fallback
+            stakingToken: stakeTokenData.name || "N/A", // Fallback to 'N/A' if undefined
+            rewardToken: rewardTokenData.name || "N/A", // Fallback to 'N/A' if undefined
+            minStakeAmount: data.minStakeAmount
+              ? data.minStakeAmount.toString()
+              : "N/A", // Convert BigNumber to string with fallback
+            active: data.active || false, // Fallback to false if undefined
+          };
+        })
+      );
+      setPools(poolDetails);
+    } catch (error) {
+      console.error("Error fetching pools:", error);
+      setPools([]); // Avoid breaking the UI by setting an empty array
+    }
   };
 
   const handleStakePool = async (poolId: number) => {

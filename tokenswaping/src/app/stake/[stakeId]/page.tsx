@@ -21,6 +21,7 @@ const StakeIdPage = () => {
   const [rewardTokenData, setRewardTokenData] = useState<any>(null);
   const [stakeBtnStatus, setStakeBtnStatus] = useState(false);
   const [calculatedReward, setCalculatedReward] = useState<number | null>(null);
+  const [referralAddress, setReferralAddress] = useState<string>("");
 
   const {
     account,
@@ -34,20 +35,27 @@ const StakeIdPage = () => {
     calculateRewardFunc,
     hasValideAllowanceForStakingToken,
     increaseAllowanceForStakingToken,
+    addReferralFunc,
   } = useContext(ContractContext);
+
+  // Unified error handler
+  const handleError = (error: any, message: string) => {
+    console.error(message, error);
+    setErrorMessage(message);
+  };
 
   const handleApproveToken = async (address: string, decimal: number) => {
     if (!address || !stakeAmount || !decimal) {
       alert("Please fill all the required fields");
       return;
     }
-    console.log("Address =>", address);
 
-    const tx = await increaseAllowanceForStakingToken(
-      address,
-      stakeAmount,
-      decimal
-    );
+    try {
+      await increaseAllowanceForStakingToken(address, stakeAmount, decimal);
+      setSuccessMessage("Token approved successfully!");
+    } catch (error) {
+      handleError(error, "Error in approving token");
+    }
   };
 
   const fetchPoolData = async () => {
@@ -56,6 +64,7 @@ const StakeIdPage = () => {
       const data = await getPoolData(stakeId);
       const stakeTokenData = await getTokenData(data.stakingToken);
       const rewardTokenData = await getTokenData(data.rewardToken);
+
       await handleShowMyBalancesInPool(poolindex, stakeTokenData.decimal);
 
       setStakeTokenData(stakeTokenData);
@@ -68,18 +77,18 @@ const StakeIdPage = () => {
       });
       setStakeBtnStatus(true);
     } catch (error) {
-      console.error("Error fetching pool data:", error);
+      handleError(error, "Error fetching pool data");
     }
   };
 
   const handleStake = async (poolId: number, decimal: number) => {
     setErrorMessage("");
     try {
-      const Validamount = await hasValideAllowanceForStakingToken(
+      const validAmount = await hasValideAllowanceForStakingToken(
         stakeTokenData.address,
         decimal
       );
-      if (Validamount < stakeAmount) {
+      if (stakeAmount && validAmount < stakeAmount) {
         alert("Insufficient allowance");
         return;
       }
@@ -87,37 +96,34 @@ const StakeIdPage = () => {
       await stakeFunc(stakeAmount, poolId, decimal);
       setSuccessMessage("Successfully staked!");
     } catch (error) {
-      setErrorMessage("Error in staking");
+      handleError(error, "Error in staking");
     }
   };
 
   const handleWithdrawAllAmount = async (poolId: number) => {
-    setErrorMessage("");
     try {
       await withdrawAllAmountFunc(poolId);
       setSuccessMessage("Successfully withdrew all staked amount!");
     } catch (error) {
-      setErrorMessage("Error in withdrawing all amount");
+      handleError(error, "Error in withdrawing all amount");
     }
   };
 
   const handleWithdrawProfit = async (poolId: number) => {
-    setErrorMessage("");
     try {
       await withdrawProfitFunc(poolId);
       setSuccessMessage("Successfully withdrew profit!");
     } catch (error) {
-      setErrorMessage("Error in withdrawing profit");
+      handleError(error, "Error in withdrawing profit");
     }
   };
 
   const handleWithdrawSpecificProfit = async (poolId: number) => {
-    setErrorMessage("");
     try {
-      await withdrawSpecificProfitFunc(withdrawAmount, poolId);
+      await withdrawSpecificProfitFunc(withdrawAmount, poolId , rewardTokenData.decimal);
       setSuccessMessage("Successfully withdrew specific profit!");
     } catch (error) {
-      setErrorMessage("Error in withdrawing specific profit");
+      handleError(error, "Error in withdrawing specific profit");
     }
   };
 
@@ -125,39 +131,41 @@ const StakeIdPage = () => {
     poolId: number,
     decimal: number
   ) => {
-    setErrorMessage("");
     try {
       const result = await showMyBalancesInPoolFunc(poolId, decimal);
-      console.log("My balances:", result);
       setStakeAmount(result);
     } catch (error) {
-      console.log("Error in showing my balances in pool =>", error);
-      setErrorMessage("Error in showing my balances in pool");
+      handleError(error, "Error in showing my balances in pool");
     }
   };
 
   const handleCalculateReward = async (poolId: number, decimal: number) => {
-    setErrorMessage("");
     try {
       const result = await calculateRewardFunc(poolId, decimal);
-      console.log("Calculated reward:", result);
       setCalculatedReward(result);
     } catch (error) {
-      setErrorMessage("Error in calculating reward");
+      handleError(error, "Error in calculating reward");
     }
   };
 
-  // Set up an interval to calculate the reward every second
   useEffect(() => {
     if (stakeBtnStatus) {
       const intervalId = setInterval(() => {
         handleCalculateReward(Number(stakeId), rewardTokenData.decimal);
-      }, 1000); // Every 1 second
+      }, 1000);
 
-      // Cleanup the interval on component unmount
       return () => clearInterval(intervalId);
     }
   }, [stakeBtnStatus]);
+
+  const handleAddReferral = async () => {
+    try {
+      await addReferralFunc(referralAddress);
+      setSuccessMessage("Referral added successfully!");
+    } catch (error) {
+      handleError(error, "Error in adding referral");
+    }
+  };
 
   useEffect(() => {
     fetchPoolData();
@@ -167,9 +175,8 @@ const StakeIdPage = () => {
     <div className="space-y-6">
       <h2 className="text-2xl font-bold">Stake Pool ID: {stakeId}</h2>
 
-      {/* Display pool data */}
       {poolData && (
-        <Card className="w-full flex">
+        <Card className="w-full flex flex-wrap">
           <CardContent>
             <CardHeader>
               <h3 className="text-xl font-semibold">Pool Information</h3>
@@ -196,7 +203,7 @@ const StakeIdPage = () => {
               <h3 className="text-xl font-semibold">Pool Balance</h3>
             </CardHeader>
             <p>
-              <strong>Staking Token Blanace:</strong>{" "}
+              <strong>Staking Token Balance:</strong>{" "}
               {stakeTokenData.balanceOfContract}
             </p>
             <p>
@@ -227,79 +234,75 @@ const StakeIdPage = () => {
         </Card>
       )}
 
-      {/* Real-Time Reward Display */}
       <div className="mt-4">
         <h3 className="text-xl font-semibold">
-          Your Current Reward:
+          Your Current Reward:{" "}
           {calculatedReward !== null && !isNaN(Number(calculatedReward))
             ? Number(calculatedReward).toFixed(6)
             : "Loading..."}
         </h3>
       </div>
 
-      {/* Stake Form */}
-      <div className="space-y-4 mt-6">
-        <Input
-          type="number"
-          placeholder="Enter stake amount"
-          value={stakeAmount || ""}
-          onChange={(e) => setStakeAmount(Number(e.target.value))}
-        />
-        <Button
-          variant={"outline"}
-          className="m-2"
-          onClick={() =>
-            handleApproveToken(stakeTokenData.address, stakeTokenData.decimal)
-          }
-          disabled={!stakeBtnStatus}
-        >
-          Approve Token
-        </Button>
-        <Button
-          className="m-2"
-          onClick={() => handleStake(Number(stakeId), stakeTokenData.decimal)}
-          disabled={!stakeBtnStatus}
-        >
-          Stake
-        </Button>
+      <div className="space-y-4">
+        <div>
+          <label>Stake Amount:</label>
+          <Input
+            type="number"
+            placeholder="Enter amount"
+            onChange={(e) => setStakeAmount(Number(e.target.value))}
+          />
+          <Button
+            onClick={() => handleApproveToken(stakeTokenData.address, stakeTokenData.decimal)}
+            disabled={!stakeAmount || !stakeTokenData}
+          >
+            Approve Token
+          </Button>
+          <Button
+            onClick={() => handleStake(Number(stakeId), stakeTokenData.decimal)}
+            disabled={!stakeAmount || !stakeBtnStatus}
+          >
+            Stake
+          </Button>
+        </div>
 
-        <Input
-          type="number"
-          placeholder="Enter amount to withdraw profit"
-          value={withdrawAmount || ""}
-          onChange={(e) => setWithdrawAmount(Number(e.target.value))}
-        />
-        <Button
-          onClick={() => handleWithdrawSpecificProfit(Number(stakeId))}
-          disabled={!stakeBtnStatus}
-        >
-          Withdraw Specific Profit
-        </Button>
+        <div>
+          <label>Withdraw Specific Profit:</label>
+          <Input
+            type="number"
+            placeholder="Enter amount"
+            onChange={(e) => setWithdrawAmount(Number(e.target.value))}
+          />
+          <Button
+            onClick={() =>
+              handleWithdrawSpecificProfit(Number(stakeId))
+            }
+            disabled={!withdrawAmount}
+          >
+            Withdraw Specific Profit
+          </Button>
+        </div>
 
-        <br />
-        <Button
-          onClick={() => handleWithdrawAllAmount(Number(stakeId))}
-          disabled={!stakeBtnStatus}
-        >
-          Withdraw All Staked Amount
-        </Button>
-        <br />
-        <Button
-          onClick={() => handleWithdrawProfit(Number(stakeId))}
-          disabled={!stakeBtnStatus}
-        >
-          Withdraw Profit
-        </Button>
+        <div>
+          <Button onClick={() => handleWithdrawAllAmount(Number(stakeId))}>
+            Withdraw All Amount
+          </Button>
+          <Button onClick={() => handleWithdrawProfit(Number(stakeId))}>
+            Withdraw Profit
+          </Button>
+        </div>
 
-        {/* <Button
-          onClick={() => handleCalculateReward(Number(stakeId))}
-          disabled={!stakeBtnStatus}
-        >
-          Calculate Reward
-        </Button> */}
+        <div>
+          <label>Referral Address:</label>
+          <Input
+            type="text"
+            placeholder="Enter referral address"
+            value={referralAddress}
+            onChange={(e) => setReferralAddress(e.target.value)}
+          />
+          <Button onClick={handleAddReferral}>Add Referral</Button>
+        </div>
       </div>
 
-      {/* Error message */}
       {errorMessage && (
         <Alert variant="destructive">
           <AlertTitle>Error</AlertTitle>
@@ -307,7 +310,6 @@ const StakeIdPage = () => {
         </Alert>
       )}
 
-      {/* Success message */}
       {successMessage && (
         <Alert variant="default">
           <AlertTitle>Success</AlertTitle>

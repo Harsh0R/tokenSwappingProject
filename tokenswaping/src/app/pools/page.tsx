@@ -29,21 +29,35 @@ const PoolPage = () => {
 
   const [stakingToken, setStakingToken] = useState<string | null>(null);
   const [rewardToken, setRewardToken] = useState<string | null>(null);
-  const [duration, setDuration] = useState<number>(0); // Default to 0
-  const [rewardRate, setRewardRate] = useState<number>(0); // Default to 0
+  const [duration, setDuration] = useState<number>(0);
+  const [rewardRate, setRewardRate] = useState<number>(0);
   const [tokens, setTokens] = useState<any[]>([]);
   const [pools, setPools] = useState<any[]>([]);
   const [transactionStatus, setTransactionStatus] = useState("");
 
   const fetchTokens = async () => {
-    const tokenAddresses = await getAllTokens();
-    const tokenDetails = await Promise.all(
-      tokenAddresses.map(async (address: string) => {
-        const data = await getTokenData(address);
-        return { ...data, address };
-      })
-    );
-    setTokens(tokenDetails);
+    try {
+      const tokenAddresses = await getAllTokens();
+
+      // Check if tokenAddresses is valid and is an array
+      if (!tokenAddresses || !Array.isArray(tokenAddresses)) {
+        console.log("Invalid or empty token addresses array");
+        setTokens([]); // Set an empty array to avoid breaking the UI
+        return;
+      }
+
+      const tokenDetails = await Promise.all(
+        tokenAddresses.map(async (address: string) => {
+          const data = await getTokenData(address);
+          return { ...data, address };
+        })
+      );
+
+      setTokens(tokenDetails);
+    } catch (error) {
+      console.error("Error fetching tokens:", error);
+      setTokens([]); // Set an empty array in case of error
+    }
   };
 
   const handleCreatePool = async () => {
@@ -63,34 +77,47 @@ const PoolPage = () => {
       stakingToken,
       rewardToken,
       duration,
-      rewardRate
+      rewardRate * 100
     );
 
     fetchPools();
   };
 
   const fetchPools = async () => {
-    const poolsId = await getAllPoolsId();
-    const poolDetails = await Promise.all(
-      poolsId.map(async (id: number) => {
-        const data = await getPoolData(id);
-        const stakeTokenData = await getTokenData(data.stakingToken);
-        const rewardTokenData = await getTokenData(data.rewardToken);
+    try {
+      const poolsId = await getAllPoolsId();
 
-        return {
-          id: data.poolId ? data.poolId.toString() : "N/A", // Convert BigNumber to string with fallback
-          duration: data.duration ? data.duration.toString() : "N/A", // Convert BigNumber to string with fallback
-          rewardRate: data.rewardRate ? data.rewardRate.toString() : "N/A", // Convert BigNumber to string with fallback
-          stakingToken: stakeTokenData.name || "N/A", // Fallback to 'N/A' if undefined
-          rewardToken: rewardTokenData.name || "N/A", // Fallback to 'N/A' if undefined
-          minStakeAmount: data.minStakeAmount
-            ? data.minStakeAmount.toString()
-            : "N/A", // Convert BigNumber to string with fallback
-          active: data.active || false, // Fallback to false if undefined
-        };
-      })
-    );
-    setPools(poolDetails);
+      // Check if poolsId is valid
+      if (!poolsId || poolsId.length === 0) {
+        console.log("No pool IDs returned from the contract");
+        setPools([]);
+        return;
+      }
+
+      const poolDetails = await Promise.all(
+        poolsId.map(async (id: number) => {
+          const data = await getPoolData(id);
+          const stakeTokenData = await getTokenData(data.stakingToken);
+          const rewardTokenData = await getTokenData(data.rewardToken);
+
+          return {
+            id: data.poolId ? data.poolId.toString() : "N/A",
+            duration: data.duration ? data.duration.toString() : "N/A",
+            rewardRate: data.rewardRate ? data.rewardRate.toString() : "N/A",
+            stakingToken: stakeTokenData.name || "N/A",
+            rewardToken: rewardTokenData.name || "N/A",
+            minStakeAmount: data.minStakeAmount
+              ? data.minStakeAmount.toString()
+              : "N/A",
+            active: data.active || false,
+          };
+        })
+      );
+      setPools(poolDetails);
+    } catch (error) {
+      console.error("Error fetching pools:", error);
+      setPools([]); // Clear the pool data if an error occurs
+    }
   };
 
   const handleStopPool = async (poolId: number) => {
@@ -145,13 +172,13 @@ const PoolPage = () => {
           <Input
             type="number"
             placeholder="Duration (in seconds)"
-            value={duration === 0 ? "" : duration} // Empty string when 0
+            value={duration === 0 ? "" : duration}
             onChange={(e) => setDuration(Number(e.target.value))}
           />
           <Input
             type="number"
             placeholder="Reward Rate"
-            value={rewardRate === 0 ? "" : rewardRate} // Empty string when 0
+            value={rewardRate === 0 ? "" : rewardRate}
             onChange={(e) => setRewardRate(Number(e.target.value))}
           />
         </CardContent>

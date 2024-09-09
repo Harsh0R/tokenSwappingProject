@@ -703,15 +703,16 @@ const ContractContextProvider = ({ children }: any) => {
     }
   };
 
-  const getAllPoolsId = async () => {
+  async function getAllPoolsId() {
     try {
       const contract = await getStakingContract();
       const allPoolIds = await contract?.getAllPoolIds();
-      return allPoolIds;
+      return allPoolIds || [];
     } catch (error) {
-      console.log("Error in getAllPoolsId => ", error);
+      console.log("Error in getAllPoolsId:", error);
+      return [];
     }
-  };
+  }
 
   const getPoolData = async (poolId: number) => {
     try {
@@ -791,6 +792,8 @@ const ContractContextProvider = ({ children }: any) => {
   const calculateRewardFunc = async (poolId: number, decimal: number) => {
     try {
       const contract = await getStakingContract();
+      console.log("account =>", account);
+
       const reward = await contract?.calculateProfit(account, poolId);
       if (decimal == 18) {
         return toEth(reward);
@@ -818,12 +821,32 @@ const ContractContextProvider = ({ children }: any) => {
     }
   };
 
-  const withdrawSpecificProfitFunc = async (amount: number, poolId: number) => {
+  const withdrawSpecificProfitFunc = async (
+    amount: number,
+    poolId: number,
+    decimal: number
+  ) => {
     try {
       const contract = await getStakingContract();
-      const tx = await contract?.withdrawSpecificProfit(amount, poolId);
-      await tx.wait();
-      setTransactionStatus(`Withdraw successfully!`);
+      if (decimal == 18) {
+        const tx = await contract?.withdrawSpecificProfit(amount, poolId);
+        await tx.wait();
+        setTransactionStatus(`Withdraw successfully!`);
+      } else if (decimal == 12) {
+        const tx = await contract?.withdrawSpecificProfit(
+          toTokenA(amount.toString()),
+          poolId
+        );
+        await tx.wait();
+        setTransactionStatus(`Withdraw successfully!`);
+      } else if (decimal == 6) {
+        const tx = await contract?.withdrawSpecificProfit(
+          toTokenB(amount.toString()),
+          poolId
+        );
+        await tx.wait();
+        setTransactionStatus(`Withdraw successfully!`);
+      }
     } catch (error) {
       const errorMessage = (error as Error).message || "Transaction failed";
       console.log("Error in withdrawSpecificProfit => ", errorMessage);
@@ -862,6 +885,20 @@ const ContractContextProvider = ({ children }: any) => {
     } catch (error) {
       const errorMessage = (error as Error).message || "Transaction failed";
       console.log("Error in show balance in pool => ", errorMessage);
+      setTransactionStatus(`Transaction failed: ${errorMessage}`);
+    }
+  };
+
+  const addReferralFunc = async (address: string) => {
+    try {
+      const contract = await getStakingContract();
+      const tx = await contract?.addReferral(address);
+      if (tx) {
+        setTransactionStatus("Referral added successfully!");
+      }
+    } catch (error) {
+      const errorMessage = (error as Error).message || "Transaction failed";
+      console.log("Error in add referral => ", errorMessage);
       setTransactionStatus(`Transaction failed: ${errorMessage}`);
     }
   };
@@ -927,6 +964,7 @@ const ContractContextProvider = ({ children }: any) => {
         withdrawSpecificProfitFunc,
         showMyBalancesInPoolFunc,
         calculateRewardFunc,
+        addReferralFunc,
       }}
     >
       {children}

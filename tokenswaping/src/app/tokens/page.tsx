@@ -64,6 +64,10 @@ const TokenCreationPage = () => {
 
   const fetchTokens = async () => {
     const tokenAddresses = await getAllTokens();
+    if (!tokenAddresses) {
+      console.log("No token addresses found");
+      return;
+    }
     const tokenDetails = await Promise.all(
       tokenAddresses.map(async (address: string) => {
         const data = await getTokenData(address);
