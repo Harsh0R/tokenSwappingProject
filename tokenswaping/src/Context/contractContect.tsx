@@ -937,7 +937,7 @@ const ContractContextProvider = ({ children }: any) => {
           }
       }`;
 
-    const { data } = await client.query(query).toPromise();
+    const { data } = await client.query(query , {}).toPromise();
     // console.log("Data =>", data);
     return data.userDatas;
   };
