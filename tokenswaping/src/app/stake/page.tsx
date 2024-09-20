@@ -30,17 +30,15 @@ const StakePage = () => {
 
   const [pools, setPools] = useState<any[]>([]);
   const router = useRouter();
-  
 
   const fetchPools = async () => {
     try {
       const poolsId = await getAllPoolsId();
-      console.log("Pools ID:", poolsId); // Debugging log
+      console.log("Pools ID:", poolsId); 
 
-      // Ensure poolsId is an array before calling map
       if (!poolsId || !Array.isArray(poolsId)) {
         console.error("Invalid poolsId: Not an array or undefined");
-        setPools([]); // Avoid breaking the UI by setting an empty array
+        setPools([]); 
         return;
       }
 
@@ -51,22 +49,22 @@ const StakePage = () => {
           const rewardTokenData = await getTokenData(data.rewardToken);
 
           return {
-            id: data.poolId ? data.poolId.toString() : "N/A", // Convert BigNumber to string with fallback
-            duration: data.duration ? data.duration.toString() : "N/A", // Convert BigNumber to string with fallback
-            rewardRate: data.rewardRate ? data.rewardRate.toString() : "N/A", // Convert BigNumber to string with fallback
-            stakingToken: stakeTokenData.name || "N/A", // Fallback to 'N/A' if undefined
-            rewardToken: rewardTokenData.name || "N/A", // Fallback to 'N/A' if undefined
+            id: data.poolId ? data.poolId.toString() : "N/A",
+            duration: data.duration ? data.duration.toString() : "N/A",
+            rewardRate: data.rewardRate ? data.rewardRate.toString() : "N/A",
+            stakingToken: stakeTokenData.name || "N/A",
+            rewardToken: rewardTokenData.name || "N/A",
             minStakeAmount: data.minStakeAmount
               ? data.minStakeAmount.toString()
-              : "N/A", // Convert BigNumber to string with fallback
-            active: data.active || false, // Fallback to false if undefined
+              : "N/A",
+            active: data.active || false,
           };
         })
       );
       setPools(poolDetails);
     } catch (error) {
       console.error("Error fetching pools:", error);
-      setPools([]); // Avoid breaking the UI by setting an empty array
+      setPools([]); 
     }
   };
 
@@ -106,7 +104,7 @@ const StakePage = () => {
                 </div>
                 <div>
                   <p>
-                    <strong>Reward Rate:</strong> {pool.rewardRate}
+                    <strong>Reward Rate:</strong> {pool.rewardRate/100}%
                   </p>
                   <p>
                     <strong>Minimum Stake Amount:</strong> {pool.minStakeAmount}

@@ -21,6 +21,7 @@ import {
   StakingContractAddress,
   SwappingContractAddress,
 } from "@/Constants/Constants";
+import { createClient } from "urql";
 
 export const ContractContext = createContext<any>(undefined);
 
@@ -718,7 +719,6 @@ const ContractContextProvider = ({ children }: any) => {
     try {
       const contract = await getStakingContract();
       const poolData = await contract?.pools(poolId);
-      console.log("PoolData =>", poolData);
 
       return poolData;
     } catch (error) {
@@ -792,7 +792,6 @@ const ContractContextProvider = ({ children }: any) => {
   const calculateRewardFunc = async (poolId: number, decimal: number) => {
     try {
       const contract = await getStakingContract();
-      console.log("account =>", account);
 
       const reward = await contract?.calculateProfit(account, poolId);
       if (decimal == 18) {
@@ -829,7 +828,12 @@ const ContractContextProvider = ({ children }: any) => {
     try {
       const contract = await getStakingContract();
       if (decimal == 18) {
-        const tx = await contract?.withdrawSpecificProfit(amount, poolId);
+        console.log("Withdrawing amount:", toWei(amount.toString()));
+
+        const tx = await contract?.withdrawSpecificProfit(
+          toWei(amount.toString()),
+          poolId
+        );
         await tx.wait();
         setTransactionStatus(`Withdraw successfully!`);
       } else if (decimal == 12) {
@@ -903,6 +907,41 @@ const ContractContextProvider = ({ children }: any) => {
     }
   };
 
+  const thisAcccountRefferedBy = async (address: string) => {
+    try {
+      const contract = await getStakingContract();
+      const result = await contract?.referredBy(address);
+      return result;
+    } catch (error) {
+      console.log("Error in thisAcccountRefferedBy => ", error);
+    }
+  };
+
+  //region Graph Functions
+
+  const QueryUrl =
+    "https://api.studio.thegraph.com/query/88504/staking/version/latest";
+  const client = createClient({
+    url: QueryUrl,
+  });
+
+  const getUserData = async () => {
+    const query = `{
+          userDatas {
+                user
+                withdrawnProfit
+                referredBy
+                poolId
+                id
+                blockTimestamp
+          }
+      }`;
+
+    const { data } = await client.query(query).toPromise();
+    // console.log("Data =>", data);
+    return data.userDatas;
+  };
+
   return (
     <ContractContext.Provider
       value={{
@@ -965,6 +1004,8 @@ const ContractContextProvider = ({ children }: any) => {
         showMyBalancesInPoolFunc,
         calculateRewardFunc,
         addReferralFunc,
+        thisAcccountRefferedBy,
+        getUserData,
       }}
     >
       {children}

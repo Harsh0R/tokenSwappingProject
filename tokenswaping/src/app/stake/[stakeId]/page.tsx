@@ -65,11 +65,10 @@ const StakeIdPage = () => {
       const stakeTokenData = await getTokenData(data.stakingToken);
       const rewardTokenData = await getTokenData(data.rewardToken);
 
-      await handleShowMyBalancesInPool(poolindex, stakeTokenData.decimal);
-
       setStakeTokenData(stakeTokenData);
       setRewardTokenData(rewardTokenData);
 
+      await handleShowMyBalancesInPool(poolindex, stakeTokenData.decimal);
       setPoolData({
         ...data,
         stakeToken: stakeTokenData.name,
@@ -93,6 +92,10 @@ const StakeIdPage = () => {
         return;
       }
 
+      const data = await getPoolData(stakeId);
+      const rewardTokenData = await getTokenData(data.rewardToken);
+      setStakeTokenData(stakeTokenData);
+      setRewardTokenData(rewardTokenData);
       await stakeFunc(stakeAmount, poolId, decimal);
       setSuccessMessage("Successfully staked!");
     } catch (error) {
@@ -103,6 +106,11 @@ const StakeIdPage = () => {
   const handleWithdrawAllAmount = async (poolId: number) => {
     try {
       await withdrawAllAmountFunc(poolId);
+      const data = await getPoolData(stakeId);
+      const stakeTokenData = await getTokenData(data.stakingToken);
+      const rewardTokenData = await getTokenData(data.rewardToken);
+      setStakeTokenData(stakeTokenData);
+      setRewardTokenData(rewardTokenData);
       setSuccessMessage("Successfully withdrew all staked amount!");
     } catch (error) {
       handleError(error, "Error in withdrawing all amount");
@@ -112,6 +120,11 @@ const StakeIdPage = () => {
   const handleWithdrawProfit = async (poolId: number) => {
     try {
       await withdrawProfitFunc(poolId);
+      const data = await getPoolData(stakeId);
+      const stakeTokenData = await getTokenData(data.stakingToken);
+      const rewardTokenData = await getTokenData(data.rewardToken);
+      setStakeTokenData(stakeTokenData);
+      setRewardTokenData(rewardTokenData);
       setSuccessMessage("Successfully withdrew profit!");
     } catch (error) {
       handleError(error, "Error in withdrawing profit");
@@ -120,7 +133,16 @@ const StakeIdPage = () => {
 
   const handleWithdrawSpecificProfit = async (poolId: number) => {
     try {
-      await withdrawSpecificProfitFunc(withdrawAmount, poolId , rewardTokenData.decimal);
+      await withdrawSpecificProfitFunc(
+        withdrawAmount,
+        poolId,
+        rewardTokenData.decimal
+      );
+      const data = await getPoolData(stakeId);
+      const stakeTokenData = await getTokenData(data.stakingToken);
+
+      setStakeTokenData(stakeTokenData);
+      setRewardTokenData(rewardTokenData);
       setSuccessMessage("Successfully withdrew specific profit!");
     } catch (error) {
       handleError(error, "Error in withdrawing specific profit");
@@ -142,6 +164,7 @@ const StakeIdPage = () => {
   const handleCalculateReward = async (poolId: number, decimal: number) => {
     try {
       const result = await calculateRewardFunc(poolId, decimal);
+      console.log("Calculating reward called ===> ", result);
       setCalculatedReward(result);
     } catch (error) {
       handleError(error, "Error in calculating reward");
@@ -191,7 +214,8 @@ const StakeIdPage = () => {
               <strong>Duration:</strong> {poolData.duration.toString()} seconds
             </p>
             <p>
-              <strong>Reward Rate:</strong> {poolData.rewardRate.toString()}
+              <strong>Reward Rate:</strong>{" "}
+              {(poolData.rewardRate / 100).toString()}%
             </p>
             <p>
               <strong>Minimum Stake Amount:</strong>{" "}
@@ -252,7 +276,9 @@ const StakeIdPage = () => {
             onChange={(e) => setStakeAmount(Number(e.target.value))}
           />
           <Button
-            onClick={() => handleApproveToken(stakeTokenData.address, stakeTokenData.decimal)}
+            onClick={() =>
+              handleApproveToken(stakeTokenData.address, stakeTokenData.decimal)
+            }
             disabled={!stakeAmount || !stakeTokenData}
           >
             Approve Token
@@ -273,9 +299,7 @@ const StakeIdPage = () => {
             onChange={(e) => setWithdrawAmount(Number(e.target.value))}
           />
           <Button
-            onClick={() =>
-              handleWithdrawSpecificProfit(Number(stakeId))
-            }
+            onClick={() => handleWithdrawSpecificProfit(Number(stakeId))}
             disabled={!withdrawAmount}
           >
             Withdraw Specific Profit

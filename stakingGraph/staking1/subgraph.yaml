@@ -1,0 +1,56 @@
+specVersion: 1.0.0
+indexerHints:
+  prune: auto
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum
+    name: Contract
+    network: polygon-amoy
+    source:
+      address: "0xEba0fdCbf4677a89De9EE577EFeFA90579140Dc5"
+      abi: Contract
+      startBlock: 11797619
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - BalanceUpdated
+        - DepositTimeUpdated
+        - DurationUpdated
+        - OwnershipTransferred
+        - PoolCreated
+        - ProfitWithdrawn
+        - RewardRateUpdated
+        - Staked
+        - TokenCreated
+        - UserData
+        - Withdrawn
+      abis:
+        - name: Contract
+          file: ./abis/Contract.json
+      eventHandlers:
+        - event: BalanceUpdated(indexed address,uint256,uint256)
+          handler: handleBalanceUpdated
+        - event: DepositTimeUpdated(indexed address,uint256,uint256)
+          handler: handleDepositTimeUpdated
+        - event: DurationUpdated(uint256,uint256)
+          handler: handleDurationUpdated
+        - event: OwnershipTransferred(indexed address,indexed address)
+          handler: handleOwnershipTransferred
+        - event: PoolCreated(uint256,address,address,uint256,uint256,bool)
+          handler: handlePoolCreated
+        - event: ProfitWithdrawn(indexed address,uint256,uint256)
+          handler: handleProfitWithdrawn
+        - event: RewardRateUpdated(uint256,uint256)
+          handler: handleRewardRateUpdated
+        - event: Staked(indexed address,uint256,uint256)
+          handler: handleStaked
+        - event: TokenCreated(address,string,string,uint256)
+          handler: handleTokenCreated
+        - event: UserData(indexed address,uint256,address,uint256)
+          handler: handleUserData
+        - event: Withdrawn(indexed address,uint256,uint256,uint256)
+          handler: handleWithdrawn
+      file: ./src/contract.ts

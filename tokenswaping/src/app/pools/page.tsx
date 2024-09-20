@@ -30,7 +30,7 @@ const PoolPage = () => {
   const [stakingToken, setStakingToken] = useState<string | null>(null);
   const [rewardToken, setRewardToken] = useState<string | null>(null);
   const [duration, setDuration] = useState<number>(0);
-  const [rewardRate, setRewardRate] = useState<number>(0);
+  const [rewardRate, setRewardRate] = useState<any>(0);
   const [tokens, setTokens] = useState<any[]>([]);
   const [pools, setPools] = useState<any[]>([]);
   const [transactionStatus, setTransactionStatus] = useState("");
@@ -73,18 +73,20 @@ const PoolPage = () => {
       return;
     }
 
+    setTransactionStatus("Createing Pool...");
     const tx = await createPool(
       stakingToken,
       rewardToken,
       duration,
       rewardRate * 100
     );
-
-    fetchPools();
+    await fetchPools();
+    setTransactionStatus("Pool created successfully");
   };
 
   const fetchPools = async () => {
     try {
+      setTransactionStatus("Fetching all pools...");
       const poolsId = await getAllPoolsId();
 
       // Check if poolsId is valid
@@ -113,6 +115,7 @@ const PoolPage = () => {
           };
         })
       );
+      setTransactionStatus("");
       setPools(poolDetails);
     } catch (error) {
       console.error("Error fetching pools:", error);
@@ -179,7 +182,7 @@ const PoolPage = () => {
             type="number"
             placeholder="Reward Rate"
             value={rewardRate === 0 ? "" : rewardRate}
-            onChange={(e) => setRewardRate(Number(e.target.value))}
+            onChange={(e) => setRewardRate(e.target.value)}
           />
         </CardContent>
         <CardFooter>
@@ -187,6 +190,11 @@ const PoolPage = () => {
             Create Pool
           </Button>
         </CardFooter>
+        {transactionStatus && (
+          <div className="text-center mt-2 text-sm text-gray-600">
+            {transactionStatus}
+          </div>
+        )}
       </Card>
 
       {/* Display All Pools */}
@@ -212,7 +220,7 @@ const PoolPage = () => {
                 </div>
                 <div>
                   <p>
-                    <strong>Reward Rate:</strong> {pool.rewardRate}
+                    <strong>Reward Rate:</strong> {pool.rewardRate/100}%
                   </p>
                   <p>
                     <strong>Minimum Stake Amount:</strong> {pool.minStakeAmount}

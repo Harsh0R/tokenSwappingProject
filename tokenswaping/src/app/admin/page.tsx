@@ -600,6 +600,28 @@ const Page = () => {
             </div>
           </div>
 
+          {/* <div className="flex items-center mt-8 sm:mt-5 justify-between w-full">
+            <div className="flex flex-col items-left justify-center rounded-lg space-y-2">
+              <div className="text-white rounded-lg shadow-md">
+                Show Staking pools data
+              </div>
+            </div>
+            <div className="flex flex-col items-center justify-center rounded-lg">
+              <Button
+                variant="outline"
+                className="tech_btn cnctwlthedBtn flex items-center border-none rounded-full h-12 outline-none relative w-40 active:translate-y-1 active:scale-90 duration-150 ease-linear"
+              >
+                <i></i>
+                <i></i>
+                <Link href="/stake-admin">
+                  <span className="items-center bg-[#000000a6] rounded-full flex justify-center left-0 capitalize overflow-hidden font-medium">
+                    Submit
+                  </span>
+                </Link>
+              </Button>
+            </div>
+          </div>
+ */}
 
         </div>
       </div>
